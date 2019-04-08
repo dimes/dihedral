@@ -1,47 +1,31 @@
 package test
 
 import (
-	"io"
-
 	"github.com/dimes/di/embeds"
-	"github.com/dimes/di/something"
 )
 
-func A() {
+type Greeting string
+type ServiceTimeout int
 
+type MyComponent interface {
+	Modules() *Module
+	Target() *MyTarget
 }
 
 type Module struct {
 }
 
-func (m *Module) SomeBinding() MyString {
-	return MyString("Hello")
+func (m *Module) ProvidesGreeting() Greeting {
+	return Greeting("Hello")
 }
 
-func (m *Module) OtherBinding(input MyString) BindingModule {
-	return nil
+func (m *Module) ProvideServiceTimeout() ServiceTimeout {
+	return ServiceTimeout(10)
 }
 
-type BindingModule interface {
-	BindsR(impl R) io.Reader
-}
-
-type SomeType interface {
-	Modules() (*Module, *something.Module, BindingModule)
-	Target() *MyTarget
-}
-
-type R struct {
-}
-
-func (r *R) Read(p []byte) (n int, err error) {
-	return 0, nil
-}
-
-type MyString string
 type MyTarget struct {
 	inject embeds.Inject
 
-	A      MyString `di:"tag"`
-	TheMod BindingModule
+	Greeting Greeting
+	Timeout  ServiceTimeout
 }

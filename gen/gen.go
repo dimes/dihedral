@@ -186,7 +186,7 @@ func (g *GeneratedComponent) ToSource(componentPackage string) map[string]string
 	}
 	builder.WriteString("}\n")
 
-	builder.WriteString("func NewComponent() *" + componentType + " {\n")
+	builder.WriteString("func New" + g.name + "() *" + componentType + " {\n")
 	builder.WriteString("\t return &" + componentType + "{\n")
 	for _, module := range moduleStructParams {
 		moduleImportName := imports[module.Name.Obj().Pkg().Path()]

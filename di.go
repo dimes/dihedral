@@ -23,7 +23,7 @@ func main() {
 	var outputDir string
 
 	flag.StringVar(&packageName, "package", "test", "The name of the package containing the component")
-	flag.StringVar(&componentName, "component", "SomeType", "The name of the component")
+	flag.StringVar(&componentName, "component", "MyComponent", "The name of the component")
 	flag.StringVar(&outputDir, "output", "di", "The directory to output generated source to")
 	flag.Parse()
 
