@@ -32,7 +32,8 @@ type resolutionNode struct {
 // InjectionTarget represents something that should be injected
 type InjectionTarget struct {
 	MethodName string
-	Type       types.Type
+	Type       *types.Named
+	IsPointer  bool
 }
 
 // ResolvedType represents a type that has been resolved via a module.
@@ -258,10 +259,22 @@ func getTargetsFromInterface(
 				method, interfaceType)
 		}
 
-		targetType := signature.Results().At(0).Type()
+		isPointer := false
+		var namedType *types.Named
+		switch targetType := signature.Results().At(0).Type().(type) {
+		case *types.Named:
+			namedType = targetType
+		case *types.Pointer:
+			isPointer = true
+			namedType = targetType.Elem().(*types.Named)
+		default:
+			return nil, fmt.Errorf("Type %+v is not a valid target", targetType)
+		}
+
 		targets = append(targets, &InjectionTarget{
 			MethodName: method.Name(),
-			Type:       targetType,
+			Type:       namedType,
+			IsPointer:  isPointer,
 		})
 	}
 

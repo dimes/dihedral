@@ -24,13 +24,19 @@ const (
 // GeneratedComponent is the resolve of GenerateComponent and contains helper methods
 // for converting this directly into source
 type GeneratedComponent struct {
-	name      string
-	factories []*GeneratedFactory
-	providers []*GeneratedProvider
+	name                  string
+	targetsAndAssignments []*targetAndAssignment
+	factories             []*GeneratedFactory
+	providers             []*GeneratedProvider
 }
 
 type injectionTarget struct {
 	Type types.Type
+}
+
+type targetAndAssignment struct {
+	target     *resolver.InjectionTarget
+	assignment Assignment
 }
 
 func newInjectionTarget(targetType types.Type) *injectionTarget {
@@ -111,40 +117,68 @@ func NewGeneratedComponent(
 		injectionStack = append(injectionStack, providerFunc.dependencies...)
 	}
 
+	targetsAndAssignments := make([]*targetAndAssignment, 0)
+	for _, target := range targets {
+		assignment, err := AssignmentForFieldType(
+			target.Type,
+			providers,
+			bindings)
+		if err != nil {
+			return nil, errors.Wrapf(err, "Error getting toplevel target for %+v", target)
+		}
+
+		targetsAndAssignments = append(targetsAndAssignments, &targetAndAssignment{
+			target:     target,
+			assignment: assignment,
+		})
+	}
+
 	return &GeneratedComponent{
-		name:      componentName,
-		factories: factories,
-		providers: providerFuncs,
+		name:                  componentName,
+		targetsAndAssignments: targetsAndAssignments,
+		factories:             factories,
+		providers:             providerFuncs,
 	}, nil
 }
 
 // ToSource returns a map of file names to file contents that represent the generated
 // source of this component
 func (g *GeneratedComponent) ToSource(componentPackage string) map[string]string {
-	moduleImports := make(map[string]string)
-	modulesToImport := make([]*structs.Struct, 0)
+	imports := make(map[string]string)
+	moduleStructParams := make([]*structs.Struct, 0)
 	for _, provider := range g.providers {
 		packagePath := provider.resolvedType.Module.Name.Obj().Pkg().Path()
-		if _, ok := moduleImports[packagePath]; ok {
+		if _, ok := imports[packagePath]; ok {
 			continue
 		}
 
-		modulesToImport = append(modulesToImport, provider.resolvedType.Module)
-		moduleImports[packagePath] = "module_" + strconv.Itoa(len(moduleImports)+1)
+		moduleStructParams = append(moduleStructParams, provider.resolvedType.Module)
+		imports[packagePath] = "di_import_" + strconv.Itoa(len(imports)+1)
+	}
+
+	for _, targetAssignment := range g.targetsAndAssignments {
+		target := targetAssignment.target
+		packagePath := target.Type.Obj().Pkg().Path()
+		if _, ok := imports[packagePath]; ok {
+			continue
+		}
+
+		imports[packagePath] = "di_import_" + strconv.Itoa(len(imports)+1)
 	}
 
 	var builder strings.Builder
 	builder.WriteString("package " + componentPackage + "\n")
 
 	builder.WriteString("import (\n")
-	for packagePath, importName := range moduleImports {
+	for packagePath, importName := range imports {
 		builder.WriteString("\t" + importName + " \"" + packagePath + "\"\n")
 	}
+
 	builder.WriteString(")\n")
 
 	builder.WriteString("type " + componentType + " struct {\n")
-	for _, module := range modulesToImport {
-		moduleImportName := moduleImports[module.Name.Obj().Pkg().Path()]
+	for _, module := range moduleStructParams {
+		moduleImportName := imports[module.Name.Obj().Pkg().Path()]
 		moduleTypeName := module.Name.Obj().Name()
 		moduleVariableName := SanitizeName(module.Name)
 		builder.WriteString(
@@ -154,8 +188,8 @@ func (g *GeneratedComponent) ToSource(componentPackage string) map[string]string
 
 	builder.WriteString("func NewComponent() *" + componentType + " {\n")
 	builder.WriteString("\t return &" + componentType + "{\n")
-	for _, module := range modulesToImport {
-		moduleImportName := moduleImports[module.Name.Obj().Pkg().Path()]
+	for _, module := range moduleStructParams {
+		moduleImportName := imports[module.Name.Obj().Pkg().Path()]
 		moduleTypeName := module.Name.Obj().Name()
 		moduleVariableName := SanitizeName(module.Name)
 		builder.WriteString(
@@ -163,6 +197,22 @@ func (g *GeneratedComponent) ToSource(componentPackage string) map[string]string
 	}
 	builder.WriteString("\t}\n")
 	builder.WriteString("}\n")
+
+	for _, targetAssignment := range g.targetsAndAssignments {
+		target := targetAssignment.target
+		importName := imports[target.Type.Obj().Pkg().Path()]
+		targetTypeName := target.Type.Obj().Name()
+		returnType := importName + "." + targetTypeName
+		if target.IsPointer {
+			returnType = "*" + returnType
+		}
+		assignment := targetAssignment.assignment
+		builder.WriteString(
+			"func (" + componentName + " *" + componentType + ") " + target.MethodName + "() " +
+				returnType + " {\n")
+		builder.WriteString("\treturn " + assignment.GetSourceAssignment() + "\n")
+		builder.WriteString("}\n")
+	}
 
 	output := map[string]string{
 		"component": builder.String(),
