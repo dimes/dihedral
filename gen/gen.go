@@ -161,6 +161,7 @@ func (g *GeneratedComponent) ToSource(componentPackage string) map[string]string
 		builder.WriteString(
 			"\t\t" + moduleVariableName + ": " + moduleImportName + "." + moduleTypeName + ",\n")
 	}
+	builder.WriteString("\t}\n")
 	builder.WriteString("}\n")
 
 	output := map[string]string{
