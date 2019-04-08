@@ -2,13 +2,14 @@ package test
 
 import (
 	"github.com/dimes/di/embeds"
+	"github.com/dimes/di/test/othermod"
 )
 
 type Greeting string
 type ServiceTimeout int
 
 type MyComponent interface {
-	Modules() (*Module, BindingModule)
+	Modules() (*Module, BindingModule, *othermod.Module)
 	Target() *MyTarget
 }
 
@@ -33,6 +34,7 @@ type MyTarget struct {
 	Greeting    Greeting
 	Timeout     ServiceTimeout
 	MyInterface MyInterface
+	Additional  *othermod.AdditionalFunctionality
 }
 
 type MyInterface interface {

@@ -198,13 +198,10 @@ func ResolveComponentModules(
 					receiverName := pointerReceiver.Elem().(*types.Named)
 					receiverID := typeutil.IDFromNamed(receiverName)
 
-					fmt.Printf("%+v\n", receiverName)
-
 					if receiverID != id {
 						continue
 					}
 
-					fmt.Println("here")
 					if signature.Results().Len() != 1 {
 						return nil, nil, nil, fmt.Errorf("Expecting exactly one result from %+v", signature)
 					}

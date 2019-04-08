@@ -76,8 +76,6 @@ func NewGeneratedComponent(
 			} else if boundType := bindings[targetID]; boundType != nil {
 				targetName = boundType.Name
 				targetStruct = boundType.Type
-				fmt.Printf("Bound type is %+v\n", boundType)
-				fmt.Printf("Binding %s to %+v\n", targetID, targetName)
 			} else {
 				return nil, fmt.Errorf("No type binding found for %+v", target)
 			}

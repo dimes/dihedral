@@ -3,7 +3,6 @@ package main
 import (
 	"flag"
 	"fmt"
-	"go/build"
 	"go/token"
 	"io/ioutil"
 	"os"
@@ -29,13 +28,6 @@ func main() {
 	flag.Parse()
 
 	fileSet := token.NewFileSet()
-
-	porter := build.Default
-	pkg, err := porter.Import("github.com/dimes/di/test", ".", 0)
-	if err != nil {
-		panic(err)
-	}
-	fmt.Printf("%+v\n", pkg.Dir)
 
 	componentInterface, err := typeutil.FindInterface(fileSet, packageName, componentName)
 	if err != nil {
