@@ -3,6 +3,7 @@ package main
 import (
 	"flag"
 	"fmt"
+	"go/build"
 	"go/token"
 	"io/ioutil"
 	"os"
@@ -22,12 +23,19 @@ func main() {
 	var componentName string
 	var outputDir string
 
-	flag.StringVar(&packageName, "package", "test", "The name of the package containing the component")
+	flag.StringVar(&packageName, "package", "github.com/dimes/di/test", "The name of the package containing the component")
 	flag.StringVar(&componentName, "component", "MyComponent", "The name of the component")
 	flag.StringVar(&outputDir, "output", "test/di", "The directory to output generated source to")
 	flag.Parse()
 
 	fileSet := token.NewFileSet()
+
+	porter := build.Default
+	pkg, err := porter.Import("github.com/dimes/di/test", ".", 0)
+	if err != nil {
+		panic(err)
+	}
+	fmt.Printf("%+v\n", pkg.Dir)
 
 	componentInterface, err := typeutil.FindInterface(fileSet, packageName, componentName)
 	if err != nil {

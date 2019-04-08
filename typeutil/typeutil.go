@@ -4,6 +4,7 @@ package typeutil
 import (
 	"fmt"
 	"go/ast"
+	"go/build"
 	"go/importer"
 	"go/parser"
 	"go/token"
@@ -25,7 +26,12 @@ func FindInterface(
 	packageName string,
 	interfaceName string,
 ) (*structs.Interface, error) {
-	packages, err := parser.ParseDir(fileSet, packageName, nil, 0)
+	imported, err := build.Default.Import(packageName, ".", build.FindOnly)
+	if err != nil {
+		return nil, errors.Wrapf(err, "Error importing package %s", packageName)
+	}
+
+	packages, err := parser.ParseDir(fileSet, imported.Dir, nil, 0)
 	if err != nil {
 		return nil, errors.Wrapf(err, "Error parsing package %s", packageName)
 	}

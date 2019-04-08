@@ -4,6 +4,7 @@ package resolver
 import (
 	"fmt"
 	"go/ast"
+	"go/build"
 	"go/importer"
 	"go/parser"
 	"go/token"
@@ -142,10 +143,15 @@ func ResolveComponentModules(
 				Type: structNode,
 			}
 
-			packageName := namedNode.Obj().Pkg().Name()
-			packages, err := parser.ParseDir(fileSet, packageName, nil, 0)
+			buildPackage, err := build.Default.Import(namedNode.Obj().Pkg().Path(), ".", build.FindOnly)
 			if err != nil {
-				return nil, nil, nil, errors.Wrapf(err, "Error parsing package %s", packageName)
+				return nil, nil, nil, errors.Wrapf(err, "Error importing %+v", namedNode)
+			}
+
+			packageDir := buildPackage.Dir
+			packages, err := parser.ParseDir(fileSet, packageDir, nil, 0)
+			if err != nil {
+				return nil, nil, nil, errors.Wrapf(err, "Error parsing package %s", packageDir)
 			}
 
 			for _, astPkg := range packages {
@@ -162,10 +168,10 @@ func ResolveComponentModules(
 					Importer: importer.ForCompiler(fileSet, "source", nil),
 				}
 
-				_, err := conf.Check(packageName, fileSet, files, info)
+				_, err := conf.Check(namedNode.Obj().Pkg().Path(), fileSet, files, info)
 				if err != nil {
 					return nil, nil, nil, errors.Wrapf(err, "Error getting definitions for package %s",
-						packageName)
+						namedNode.Obj().Pkg().Path())
 				}
 
 				for identifier, definition := range info.Defs {
@@ -191,10 +197,14 @@ func ResolveComponentModules(
 
 					receiverName := pointerReceiver.Elem().(*types.Named)
 					receiverID := typeutil.IDFromNamed(receiverName)
+
+					fmt.Printf("%+v\n", receiverName)
+
 					if receiverID != id {
 						continue
 					}
 
+					fmt.Println("here")
 					if signature.Results().Len() != 1 {
 						return nil, nil, nil, fmt.Errorf("Expecting exactly one result from %+v", signature)
 					}
