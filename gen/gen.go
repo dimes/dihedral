@@ -159,7 +159,7 @@ func (g *GeneratedComponent) ToSource(componentPackage string) map[string]string
 		moduleTypeName := module.Name.Obj().Name()
 		moduleVariableName := SanitizeName(module.Name)
 		builder.WriteString(
-			"\t\t" + moduleVariableName + ": " + moduleImportName + "." + moduleTypeName + ",")
+			"\t\t" + moduleVariableName + ": " + moduleImportName + "." + moduleTypeName + ",\n")
 	}
 	builder.WriteString("}\n")
 

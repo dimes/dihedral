@@ -3,8 +3,10 @@ package main
 import (
 	"flag"
 	"fmt"
-	"go/build"
 	"go/token"
+	"io/ioutil"
+	"os"
+	"path"
 
 	"github.com/dimes/di/gen"
 	"github.com/dimes/di/resolver"
@@ -18,9 +20,11 @@ const (
 func main() {
 	var packageName string
 	var componentName string
+	var outputDir string
 
 	flag.StringVar(&packageName, "package", "test", "The name of the package containing the component")
 	flag.StringVar(&componentName, "component", "SomeType", "The name of the component")
+	flag.StringVar(&outputDir, "output", "di", "The directory to output generated source to")
 	flag.Parse()
 
 	fileSet := token.NewFileSet()
@@ -50,9 +54,14 @@ func main() {
 	fmt.Printf("Generated component: %+v\n", component)
 
 	generatedSource := component.ToSource("di")
+	os.Mkdir(outputDir, os.ModePerm)
 	for name, file := range generatedSource {
-		fmt.Println("------")
-		fmt.Println(name + ".go")
-		fmt.Println(file)
+		if err := ioutil.WriteFile(
+			path.Join(outputDir, name+".go"),
+			[]byte(file),
+			os.ModePerm,
+		); err != nil {
+			panic(err)
+		}
 	}
 }
