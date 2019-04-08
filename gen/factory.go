@@ -48,6 +48,10 @@ func NewGeneratedFactoryIfNeeded(
 	providers map[string]*resolver.ResolvedType,
 	bindings map[string]*structs.Struct,
 ) (*GeneratedFactory, error) {
+	if targetStruct == nil {
+		return nil, nil
+	}
+
 	injectable := false
 	for i := 0; i < targetStruct.NumFields(); i++ {
 		field := targetStruct.Field(i)

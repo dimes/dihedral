@@ -66,7 +66,7 @@ func NewGeneratedComponent(
 			targetID := typeutil.IDFromNamed(typedTarget)
 			if provider := providers[targetID]; provider != nil {
 				targetName = typedTarget
-				targetStruct = provider.Provider.Type
+				// No target struct for providers
 			} else if boundType := bindings[targetID]; boundType != nil {
 				targetName = typedTarget
 				targetStruct = boundType.Type
@@ -124,12 +124,12 @@ func (g *GeneratedComponent) ToSource(componentPackage string) map[string]string
 	moduleImports := make(map[string]string)
 	modulesToImport := make([]*structs.Struct, 0)
 	for _, provider := range g.providers {
-		packagePath := provider.resolvedType.Provider.Name.Obj().Pkg().Path()
+		packagePath := provider.resolvedType.Module.Name.Obj().Pkg().Path()
 		if _, ok := moduleImports[packagePath]; ok {
 			continue
 		}
 
-		modulesToImport = append(modulesToImport, provider.resolvedType.Provider)
+		modulesToImport = append(modulesToImport, provider.resolvedType.Module)
 		moduleImports[packagePath] = "module_" + strconv.Itoa(len(moduleImports)+1)
 	}
 
@@ -148,7 +148,7 @@ func (g *GeneratedComponent) ToSource(componentPackage string) map[string]string
 		moduleTypeName := module.Name.Obj().Name()
 		moduleVariableName := SanitizeName(module.Name)
 		builder.WriteString(
-			"\t" + moduleVariableName + " " + moduleImportName + "." + moduleTypeName + "\n")
+			"\t" + moduleVariableName + " *" + moduleImportName + "." + moduleTypeName + "\n")
 	}
 	builder.WriteString("}\n")
 
@@ -159,7 +159,7 @@ func (g *GeneratedComponent) ToSource(componentPackage string) map[string]string
 		moduleTypeName := module.Name.Obj().Name()
 		moduleVariableName := SanitizeName(module.Name)
 		builder.WriteString(
-			"\t\t" + moduleVariableName + ": " + moduleImportName + "." + moduleTypeName + ",\n")
+			"\t\t" + moduleVariableName + ": &" + moduleImportName + "." + moduleTypeName + "{},\n")
 	}
 	builder.WriteString("\t}\n")
 	builder.WriteString("}\n")

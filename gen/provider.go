@@ -53,7 +53,7 @@ func NewGeneratedProvider(
 
 // ToSource returns the source code for this provider.
 func (g *GeneratedProvider) ToSource(componentPackage string) string {
-	moduleVariableName := SanitizeName(g.resolvedType.Provider.Name)
+	moduleVariableName := SanitizeName(g.resolvedType.Module.Name)
 	returnType := "target_pkg." + g.resolvedType.Name.Obj().Name()
 	if g.resolvedType.IsPointer {
 		returnType = "*" + returnType
@@ -63,13 +63,15 @@ func (g *GeneratedProvider) ToSource(componentPackage string) string {
 	builder.WriteString("package " + componentPackage + "\n")
 	builder.WriteString("import target_pkg \"" + g.resolvedType.Name.Obj().Pkg().Path() + "\"\n")
 	builder.WriteString(
-		"func (g *" + componentType + ") " + ProviderName(g.resolvedType.Provider.Name) + "() " +
+		"func (" + componentName + " *" + componentType + ") " + ProviderName(g.resolvedType.Name) + "() " +
 			returnType + " {\n")
-	builder.WriteString("\treturn g." + moduleVariableName + "." + g.resolvedType.Method.Name() + "(\n")
+	builder.WriteString(
+		"\treturn " + componentName + "." + moduleVariableName + "." + g.resolvedType.Method.Name() + "(\n")
 
 	for _, assignment := range g.assignments {
 		builder.WriteString("\t\t" + assignment.GetSourceAssignment() + ",\n")
 	}
+	builder.WriteString("\t)\n")
 
 	builder.WriteString("}\n")
 	return builder.String()

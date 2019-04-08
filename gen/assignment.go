@@ -22,6 +22,9 @@ func ProviderName(typeName *types.Named) string {
 // Assignment represents a way of getting a injected value, either by a provider
 // or by an injectable factory method
 type Assignment interface {
+	// ID returns the ID of the type being assigned
+	ID() string
+
 	// GetSourceAssignment returns the assignment as a string of source code
 	GetSourceAssignment() string
 }
@@ -37,6 +40,10 @@ func NewFactoryAssignment(typeName *types.Named) Assignment {
 	}
 }
 
+func (f *factoryAssignment) ID() string {
+	return typeutil.IDFromNamed(f.typeName)
+}
+
 func (f *factoryAssignment) GetSourceAssignment() string {
 	return FactoryName(f.typeName) + "(" + componentName + ")"
 }
@@ -50,6 +57,10 @@ func NewProviderAssignment(typeName *types.Named) Assignment {
 	return &providerAssignment{
 		typeName: typeName,
 	}
+}
+
+func (p *providerAssignment) ID() string {
+	return typeutil.IDFromNamed(p.typeName)
 }
 
 func (p *providerAssignment) GetSourceAssignment() string {

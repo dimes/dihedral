@@ -40,9 +40,8 @@ type InjectionTarget struct {
 // 1. Being bound via an interface module
 // 2. Being provided via a struct module
 type ResolvedType struct {
-	Provider  *structs.Struct
+	Module    *structs.Struct
 	Method    *types.Func
-	Type      types.Type
 	Name      *types.Named
 	IsPointer bool
 }
@@ -136,7 +135,7 @@ func ResolveComponentModules(
 				return nil, nil, nil, fmt.Errorf("Expected pointer %+v to point to a struct", typedNode)
 			}
 
-			provider := &structs.Struct{
+			module := &structs.Struct{
 				Name: namedNode,
 				Type: structNode,
 			}
@@ -222,9 +221,8 @@ func ResolveComponentModules(
 					}
 
 					resolvedType := &ResolvedType{
-						Provider:  provider,
+						Module:    module,
 						Method:    funcDefinition,
-						Type:      result.Type(),
 						Name:      resultName,
 						IsPointer: isPointer,
 					}
