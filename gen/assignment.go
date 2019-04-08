@@ -75,9 +75,11 @@ func AssignmentForFieldType(
 	fieldID := typeutil.IDFromNamed(fieldName)
 	if binding := bindings[fieldID]; binding != nil {
 		fieldID = typeutil.IDFromNamed(binding.Name)
+		fieldName = binding.Name
 	}
 
 	if provider := providers[fieldID]; provider != nil {
+		fieldName = provider.Name
 		return NewProviderAssignment(fieldName), nil
 	}
 

@@ -8,7 +8,7 @@ type Greeting string
 type ServiceTimeout int
 
 type MyComponent interface {
-	Modules() *Module
+	Modules() (*Module, BindingModule)
 	Target() *MyTarget
 }
 
@@ -23,9 +23,26 @@ func (m *Module) ProvideServiceTimeout() ServiceTimeout {
 	return ServiceTimeout(10)
 }
 
+type BindingModule interface {
+	BindsMyImplementation(impl *MyImplementation) MyInterface
+}
+
 type MyTarget struct {
 	inject embeds.Inject
 
-	Greeting Greeting
-	Timeout  ServiceTimeout
+	Greeting    Greeting
+	Timeout     ServiceTimeout
+	MyInterface MyInterface
+}
+
+type MyInterface interface {
+	TestMethod() string
+}
+
+type MyImplementation struct {
+	inject embeds.Inject
+}
+
+func (m *MyImplementation) TestMethod() string {
+	return "test"
 }

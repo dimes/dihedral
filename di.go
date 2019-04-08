@@ -24,7 +24,7 @@ func main() {
 
 	flag.StringVar(&packageName, "package", "test", "The name of the package containing the component")
 	flag.StringVar(&componentName, "component", "MyComponent", "The name of the component")
-	flag.StringVar(&outputDir, "output", "di", "The directory to output generated source to")
+	flag.StringVar(&outputDir, "output", "test/di", "The directory to output generated source to")
 	flag.Parse()
 
 	fileSet := token.NewFileSet()
@@ -55,7 +55,7 @@ func main() {
 	fmt.Printf("Generated component: %+v\n", component)
 
 	generatedSource := component.ToSource("di")
-	os.Mkdir(outputDir, os.ModePerm)
+	os.MkdirAll(outputDir, os.ModePerm)
 	for name, file := range generatedSource {
 		if err := ioutil.WriteFile(
 			path.Join(outputDir, name+".go"),

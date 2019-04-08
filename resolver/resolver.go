@@ -339,14 +339,19 @@ func extractBindings(
 			return nil, fmt.Errorf("Found duplicate binding for %+v in %+v", interfaceName, node)
 		}
 
-		implementationName, ok := signature.Params().At(0).Type().(*types.Named)
+		implementationPointer, ok := signature.Params().At(0).Type().(*types.Pointer)
 		if !ok {
-			return nil, fmt.Errorf("%+v was not named in %+v", signature.Params().At(0).Type(), node)
+			return nil, fmt.Errorf("%+v is not a pointer in %+v", signature.Params().At(0).Type(), node)
+		}
+
+		implementationName, ok := implementationPointer.Elem().(*types.Named)
+		if !ok {
+			return nil, fmt.Errorf("Expecting %+v to be a struct in %+v", implementationName, node)
 		}
 
 		implementationType, ok := implementationName.Underlying().(*types.Struct)
 		if !ok {
-			return nil, fmt.Errorf("Expecting %+v to be a struct in %+v", implementationName, node)
+			return nil, fmt.Errorf("%+v is not a struct in %+v", implementationName, node)
 		}
 
 		bindings[interfaceID] = &structs.Struct{
