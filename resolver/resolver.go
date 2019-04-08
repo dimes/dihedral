@@ -32,7 +32,8 @@ type resolutionNode struct {
 // InjectionTarget represents something that should be injected
 type InjectionTarget struct {
 	MethodName string
-	Type       *types.Named
+	Type       types.Type
+	Name       *types.Named
 	IsPointer  bool
 }
 
@@ -260,8 +261,9 @@ func getTargetsFromInterface(
 		}
 
 		isPointer := false
+		realType := signature.Results().At(0).Type()
 		var namedType *types.Named
-		switch targetType := signature.Results().At(0).Type().(type) {
+		switch targetType := realType.(type) {
 		case *types.Named:
 			namedType = targetType
 		case *types.Pointer:
@@ -273,7 +275,8 @@ func getTargetsFromInterface(
 
 		targets = append(targets, &InjectionTarget{
 			MethodName: method.Name(),
-			Type:       namedType,
+			Type:       realType,
+			Name:       namedType,
 			IsPointer:  isPointer,
 		})
 	}

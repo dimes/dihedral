@@ -158,7 +158,7 @@ func (g *GeneratedComponent) ToSource(componentPackage string) map[string]string
 
 	for _, targetAssignment := range g.targetsAndAssignments {
 		target := targetAssignment.target
-		packagePath := target.Type.Obj().Pkg().Path()
+		packagePath := target.Name.Obj().Pkg().Path()
 		if _, ok := imports[packagePath]; ok {
 			continue
 		}
@@ -200,8 +200,8 @@ func (g *GeneratedComponent) ToSource(componentPackage string) map[string]string
 
 	for _, targetAssignment := range g.targetsAndAssignments {
 		target := targetAssignment.target
-		importName := imports[target.Type.Obj().Pkg().Path()]
-		targetTypeName := target.Type.Obj().Name()
+		importName := imports[target.Name.Obj().Pkg().Path()]
+		targetTypeName := target.Name.Obj().Name()
 		returnType := importName + "." + targetTypeName
 		if target.IsPointer {
 			returnType = "*" + returnType

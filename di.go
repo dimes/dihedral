@@ -43,14 +43,15 @@ func main() {
 		panic(err)
 	}
 
+	fmt.Printf("Found targets: %+v\n", targets)
+	fmt.Printf("Found providers: %+v\n", providers)
+	fmt.Printf("Found bindings: %+v\n", bindings)
+
 	component, err := gen.NewGeneratedComponent(componentName, targets, providers, bindings)
 	if err != nil {
 		panic(err)
 	}
 
-	fmt.Printf("Found targets: %+v\n", targets)
-	fmt.Printf("Found providers: %+v\n", providers)
-	fmt.Printf("Found bindings: %+v\n", bindings)
 	fmt.Printf("Generated component: %+v\n", component)
 
 	generatedSource := component.ToSource("di")
