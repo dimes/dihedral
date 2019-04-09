@@ -24,7 +24,7 @@ func main() {
 
 	flag.StringVar(&packageName, "package", "github.com/dimes/di/test", "The name of the package containing the component")
 	flag.StringVar(&componentName, "component", "MyComponent", "The name of the component")
-	flag.StringVar(&outputDir, "output", "test/di", "The directory to output generated source to")
+	flag.StringVar(&outputDir, "output", "di", "The directory to output generated source to")
 	flag.Parse()
 
 	fileSet := token.NewFileSet()

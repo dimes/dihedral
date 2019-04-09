@@ -1,3 +1,5 @@
+//go:generate di -package github.com/dimes/di/test -component MyComponent
+
 package test
 
 import (
