@@ -1,4 +1,4 @@
-//go:generate di -package github.com/dimes/di/test -component MyComponent
+//go:generate di -component MyComponent
 
 package test
 

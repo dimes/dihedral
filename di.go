@@ -1,12 +1,15 @@
 package main
 
 import (
+	"bytes"
 	"flag"
 	"fmt"
 	"go/token"
 	"io/ioutil"
 	"os"
+	"os/exec"
 	"path"
+	"strings"
 
 	"github.com/dimes/di/gen"
 	"github.com/dimes/di/resolver"
@@ -22,10 +25,35 @@ func main() {
 	var componentName string
 	var outputDir string
 
-	flag.StringVar(&packageName, "package", "github.com/dimes/di/test", "The name of the package containing the component")
+	flag.StringVar(&packageName, "package", "", "The name of the package containing the component")
 	flag.StringVar(&componentName, "component", "MyComponent", "The name of the component")
 	flag.StringVar(&outputDir, "output", "di", "The directory to output generated source to")
 	flag.Parse()
+
+	if componentName == "" {
+		panic("-component must be set")
+	}
+
+	if packageName == "" {
+		workingDir, err := os.Getwd()
+		if err != nil {
+			panic(err)
+		}
+
+		stdout := new(bytes.Buffer)
+		stderr := new(bytes.Buffer)
+		cmd := exec.Command("go", "list")
+		cmd.Env = append(append([]string{}, os.Environ()...), "PWD="+workingDir)
+		cmd.Dir = workingDir
+		cmd.Stdout = stdout
+		cmd.Stderr = stderr
+
+		if err := cmd.Run(); err != nil {
+			panic(err)
+		}
+
+		packageName = strings.TrimSpace(stdout.String())
+	}
 
 	fileSet := token.NewFileSet()
 
