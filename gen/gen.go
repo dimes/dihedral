@@ -4,9 +4,11 @@ package gen
 import (
 	"fmt"
 	"go/types"
+	"reflect"
 	"strconv"
 	"strings"
 
+	"github.com/dimes/di/embeds"
 	"github.com/dimes/di/resolver"
 	"github.com/dimes/di/structs"
 	"github.com/dimes/di/typeutil"
@@ -19,6 +21,10 @@ const (
 
 	// The type of the generated component
 	componentType = "GeneratedComponent"
+)
+
+var (
+	providedModuleType = reflect.TypeOf(embeds.ProvidedModule{})
 )
 
 // GeneratedComponent is the resolve of GenerateComponent and contains helper methods
@@ -145,15 +151,21 @@ func NewGeneratedComponent(
 // source of this component
 func (g *GeneratedComponent) ToSource(componentPackage string) map[string]string {
 	imports := make(map[string]string)
+	seenModules := make(map[string]struct{})
 	moduleStructParams := make([]*structs.Struct, 0)
 	for _, provider := range g.providers {
 		packagePath := provider.resolvedType.Module.Name.Obj().Pkg().Path()
-		if _, ok := imports[packagePath]; ok {
-			continue
+		if _, ok := imports[packagePath]; !ok {
+			imports[packagePath] = "di_import_" + strconv.Itoa(len(imports)+1)
 		}
 
+		moduleID := typeutil.IDFromNamed(provider.resolvedType.Module.Name)
+		if _, ok := seenModules[moduleID]; ok {
+			continue
+		}
+		seenModules[moduleID] = struct{}{}
+
 		moduleStructParams = append(moduleStructParams, provider.resolvedType.Module)
-		imports[packagePath] = "di_import_" + strconv.Itoa(len(imports)+1)
 	}
 
 	for _, targetAssignment := range g.targetsAndAssignments {
@@ -186,14 +198,33 @@ func (g *GeneratedComponent) ToSource(componentPackage string) map[string]string
 	}
 	builder.WriteString("}\n")
 
-	builder.WriteString("func New" + g.name + "() *" + componentType + " {\n")
+	builder.WriteString("func New" + g.name + "(\n")
+	for _, module := range moduleStructParams {
+		if !typeutil.HasFieldOfType(module.Type, providedModuleType) {
+			continue
+		}
+
+		moduleImportName := imports[module.Name.Obj().Pkg().Path()]
+		moduleTypeName := module.Name.Obj().Name()
+		moduleVariableName := SanitizeName(module.Name)
+		builder.WriteString(
+			"\t" + moduleVariableName + " *" + moduleImportName + "." + moduleTypeName + ",\n")
+	}
+	builder.WriteString(") *" + componentType + " {\n")
 	builder.WriteString("\t return &" + componentType + "{\n")
 	for _, module := range moduleStructParams {
 		moduleImportName := imports[module.Name.Obj().Pkg().Path()]
 		moduleTypeName := module.Name.Obj().Name()
 		moduleVariableName := SanitizeName(module.Name)
-		builder.WriteString(
-			"\t\t" + moduleVariableName + ": &" + moduleImportName + "." + moduleTypeName + "{},\n")
+
+		provided := typeutil.HasFieldOfType(module.Type, providedModuleType)
+		if provided {
+			builder.WriteString(
+				"\t\t" + moduleVariableName + ": " + moduleVariableName + ",\n")
+		} else {
+			builder.WriteString(
+				"\t\t" + moduleVariableName + ": &" + moduleImportName + "." + moduleTypeName + "{},\n")
+		}
 	}
 	builder.WriteString("\t}\n")
 	builder.WriteString("}\n")

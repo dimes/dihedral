@@ -9,6 +9,7 @@ import (
 	"go/parser"
 	"go/token"
 	"go/types"
+	"reflect"
 
 	"github.com/dimes/di/structs"
 	"github.com/pkg/errors"
@@ -98,4 +99,35 @@ func GetInterfaceMethod(interfaceType *types.Interface, methodName string) *type
 	}
 
 	return nil
+}
+
+// HasFieldOfType returns true if the given struct has a non-exported field of type
+// fieldType
+func HasFieldOfType(
+	targetStruct *types.Struct,
+	fieldType reflect.Type,
+) bool {
+	for i := 0; i < targetStruct.NumFields(); i++ {
+		field := targetStruct.Field(i)
+		if field.Exported() {
+			continue
+		}
+
+		namedType, ok := field.Type().(*types.Named)
+		if !ok {
+			continue
+		}
+
+		if fieldType.PkgPath() != namedType.Obj().Pkg().Path() {
+			continue
+		}
+
+		if fieldType.Name() != namedType.Obj().Name() {
+			continue
+		}
+
+		return true
+	}
+
+	return false
 }

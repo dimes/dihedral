@@ -9,15 +9,20 @@ type Greeting string
 type ServiceTimeout int
 
 type MyComponent interface {
-	Modules() (*Module, BindingModule, *othermod.Module)
+	Modules() (*Module, *SecondModule, BindingModule, *othermod.Module)
 	Target() *MyTarget
 }
 
 type Module struct {
+	provided embeds.ProvidedModule
+	Greeting string
+}
+
+type SecondModule struct {
 }
 
 func (m *Module) ProvidesGreeting() Greeting {
-	return Greeting("Hello")
+	return Greeting(m.Greeting)
 }
 
 func (m *Module) ProvideServiceTimeout() ServiceTimeout {

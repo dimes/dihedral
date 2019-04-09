@@ -5,11 +5,11 @@ import (
 	"reflect"
 	"strings"
 
-	"github.com/dimes/di/structs"
-	"github.com/pkg/errors"
-
 	"github.com/dimes/di/embeds"
 	"github.com/dimes/di/resolver"
+	"github.com/dimes/di/structs"
+	"github.com/dimes/di/typeutil"
+	"github.com/pkg/errors"
 )
 
 const (
@@ -52,31 +52,7 @@ func NewGeneratedFactoryIfNeeded(
 		return nil, nil
 	}
 
-	injectable := false
-	for i := 0; i < targetStruct.NumFields(); i++ {
-		field := targetStruct.Field(i)
-		if field.Exported() {
-			continue
-		}
-
-		namedType, ok := field.Type().(*types.Named)
-		if !ok {
-			continue
-		}
-
-		if injectType.PkgPath() != namedType.Obj().Pkg().Path() {
-			continue
-		}
-
-		if injectType.Name() != namedType.Obj().Name() {
-			continue
-		}
-
-		injectable = true
-		break
-	}
-
-	if !injectable {
+	if !typeutil.HasFieldOfType(targetStruct, injectType) {
 		return nil, nil
 	}
 
