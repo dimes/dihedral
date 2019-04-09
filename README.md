@@ -40,7 +40,7 @@ Use the bindings
         fmt.Println(string(injected.MyField)) # Prints "Hello there"
     }
 
-# Differences from Wire
+## Differences from Wire
 
 Wire, Google's injection framework, is another compile time framework for Go. Both frameworks are inspired
 by Dagger. di differs from Wire in that di focuses on auto-injected components and self-contained
