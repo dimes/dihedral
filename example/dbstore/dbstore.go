@@ -10,20 +10,24 @@ type DBStore interface {
 	GetString() string
 }
 
-// TableDBStore is a DBStore implementation that writes to memory
-type TableDBStore struct {
+// Prefix is a prefix to append to calls to GetString
+type Prefix string
+
+// MemoryDBStore is a DBStore implementation that writes to memory
+type MemoryDBStore struct {
 	inject embeds.Inject
+	Prefix Prefix
 
 	value string
 }
 
 // StoreString stores a string in the table
-func (t *TableDBStore) StoreString(value string) error {
-	t.value = value
+func (m *MemoryDBStore) StoreString(value string) error {
+	m.value = value
 	return nil
 }
 
 // GetString returns the in-memory string value
-func (t *TableDBStore) GetString() string {
-	return t.value
+func (m *MemoryDBStore) GetString() string {
+	return string(m.Prefix) + " " + m.value
 }
