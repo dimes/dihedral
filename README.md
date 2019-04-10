@@ -8,39 +8,39 @@
 
 Create a type you want injected
 
-    type MyFieldType string   // Name this string "MyFieldType"
-    type InjectMe struct {
-        inject  embeds.Inject // Auto-inject this struct 
-        MyField MyFieldType   // Inject a string with name "MyFieldType"
+    type ServiceEndpoint string  // Name this string "ServiceEndpoint"
+    type Service struct {
+        inject  embeds.Inject    // Auto-inject this struct 
+        Endpoint ServiceEndpoint // Inject a string with name "ServiceEndpoint"
     }
 
 Create a module to provide non-injected dependencies
 
     // Each public method on this struct provides a type
-    type MyModule struct {}
-    func (m *MyModule) ProvidesMyField() MyFieldType {
-        return MyFieldType("Hello there")
+    type ServiceModule struct {}
+    func (s *ServiceModule) ProvidesServiceEndpoint() ServiceEndpoint {
+        return ServiceEndpoint("http://hello.world")
     }
 
 Create a component as the root of the dependency injection
 
     // A component tells dihedral which modules to use and the root of the DI graph
-    interface Component {
-        Modules() *MyModule 
-        InjectMePlease() *InjectMe
+    interface ServiceComponent {
+        Modules() *MyModule      // Tells dihedral which modules to include
+        InjectService() *Service // Tells dihedral the root of the DI graph
     }
 
 Generate the bindings
 
-    > dihedral -component Component
+    > dihedral -component ServiceComponent
 
 Use the bindings
 
     func main() {
         // dihedral generates the digen package
-        component := digen.NewComponent()
-        injected := component.InjectMePlease()
-        fmt.Println(string(injected.MyField)) # Prints "Hello there"
+        component := digen.ServiceComponent()
+        service := component.InjectService()
+        fmt.Println(string(injected.Endpoint)) # Prints "http://hello.world"
     }
 
 See the [example](example/) for a more detailed overview.
