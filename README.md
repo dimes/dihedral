@@ -24,7 +24,6 @@ Create a module to provide non-injected dependencies
 
 Create a component as the root of the dependency injection
 
-    // A component tells dihedral which modules to use and the root of the DI graph
     interface ServiceComponent {
         Modules() *MyModule      // Tells dihedral which modules to include
         InjectService() *Service // Tells dihedral the root of the DI graph
