@@ -4,7 +4,7 @@
 
 # Getting started
 
-    > go get github.com/dimes/dihedral
+    > go get -u github.com/dimes/dihedral
 
 Create a type you want injected
 
