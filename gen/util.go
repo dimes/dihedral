@@ -4,7 +4,7 @@ import (
 	"go/types"
 	"strings"
 
-	"github.com/dimes/di/typeutil"
+	"github.com/dimes/dihedral/typeutil"
 )
 
 // SanitizeName returns a name that can be used as a Go identifier

@@ -1,4 +1,4 @@
-module github.com/dimes/di
+module github.com/dimes/dihedral
 
 go 1.12
 

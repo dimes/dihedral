@@ -11,7 +11,7 @@ import (
 	"go/types"
 	"reflect"
 
-	"github.com/dimes/di/structs"
+	"github.com/dimes/dihedral/structs"
 	"github.com/pkg/errors"
 )
 

@@ -1,4 +1,4 @@
-//go:generate di -component ServiceComponent
+//go:generate dihedral -component ServiceComponent
 
 // Package bindings setups the the dependency bindings for a component
 package bindings
@@ -6,8 +6,8 @@ package bindings
 import (
 	"time"
 
-	"github.com/dimes/di/example"
-	"github.com/dimes/di/example/dbstore"
+	"github.com/dimes/dihedral/example"
+	"github.com/dimes/dihedral/example/dbstore"
 )
 
 // DI has four concepts:

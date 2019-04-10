@@ -8,10 +8,10 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/dimes/di/embeds"
-	"github.com/dimes/di/resolver"
-	"github.com/dimes/di/structs"
-	"github.com/dimes/di/typeutil"
+	"github.com/dimes/dihedral/embeds"
+	"github.com/dimes/dihedral/resolver"
+	"github.com/dimes/dihedral/structs"
+	"github.com/dimes/dihedral/typeutil"
 	"github.com/pkg/errors"
 )
 

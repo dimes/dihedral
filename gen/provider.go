@@ -4,8 +4,8 @@ import (
 	"go/types"
 	"strings"
 
-	"github.com/dimes/di/resolver"
-	"github.com/dimes/di/structs"
+	"github.com/dimes/dihedral/resolver"
+	"github.com/dimes/dihedral/structs"
 	"github.com/pkg/errors"
 )
 

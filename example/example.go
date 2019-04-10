@@ -3,8 +3,8 @@ package example
 import (
 	"time"
 
-	"github.com/dimes/di/embeds"
-	"github.com/dimes/di/example/dbstore"
+	"github.com/dimes/dihedral/embeds"
+	"github.com/dimes/dihedral/example/dbstore"
 )
 
 // ServiceTimeout is the amount of time the service has to handle the operation

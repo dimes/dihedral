@@ -10,8 +10,8 @@ import (
 	"go/token"
 	"go/types"
 
-	"github.com/dimes/di/structs"
-	"github.com/dimes/di/typeutil"
+	"github.com/dimes/dihedral/structs"
+	"github.com/dimes/dihedral/typeutil"
 	"github.com/pkg/errors"
 )
 

@@ -1,7 +1,7 @@
 package dbstore
 
 import (
-	"github.com/dimes/di/embeds"
+	"github.com/dimes/dihedral/embeds"
 )
 
 // DBBindingModule binds the MemoryDBStore to the DBStore interface for injection

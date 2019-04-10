@@ -1,7 +1,7 @@
 package dbstore
 
 import (
-	"github.com/dimes/di/embeds"
+	"github.com/dimes/dihedral/embeds"
 )
 
 // DBStore is an interface for Database interaction

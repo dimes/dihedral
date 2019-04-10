@@ -9,11 +9,12 @@ import (
 	"os"
 	"os/exec"
 	"path"
+	"path/filepath"
 	"strings"
 
-	"github.com/dimes/di/gen"
-	"github.com/dimes/di/resolver"
-	"github.com/dimes/di/typeutil"
+	"github.com/dimes/dihedral/gen"
+	"github.com/dimes/dihedral/resolver"
+	"github.com/dimes/dihedral/typeutil"
 )
 
 const (
@@ -26,8 +27,8 @@ func main() {
 	var outputDir string
 
 	flag.StringVar(&packageName, "package", "", "The name of the package containing the component")
-	flag.StringVar(&componentName, "component", "MyComponent", "The name of the component")
-	flag.StringVar(&outputDir, "output", "di", "The directory to output generated source to")
+	flag.StringVar(&componentName, "component", "", "The name of the component")
+	flag.StringVar(&outputDir, "output", "digen", "The directory to output generated source to")
 	flag.Parse()
 
 	if componentName == "" {
@@ -82,7 +83,7 @@ func main() {
 
 	fmt.Printf("Generated component: %+v\n", component)
 
-	generatedSource := component.ToSource("di")
+	generatedSource := component.ToSource(filepath.Base(outputDir))
 	os.MkdirAll(outputDir, os.ModePerm)
 	for name, file := range generatedSource {
 		if err := ioutil.WriteFile(
