@@ -50,7 +50,7 @@ See the [example](example/) for a more detailed overview.
 
 #### 1. Provider Modules
 
-Provider modules are structs with associate "provider" methods, which is an exported method that returns an instance of some type. These methods are called directly at runtime when the injection is performed. Provider functions can take parameters that are injected.
+Provider modules are structs with associated "provider" methods, which is an exported method that returns an instance of some type. These methods are called directly at runtime when the injection is performed. Provider functions can take parameters that are injected.
 
 ```
 type MyProviderModule struct {}
@@ -136,7 +136,7 @@ func (c *ConfigModule) ProvidesTableName() TableName {
 }
 ```
 
-By adding a non-exported field `embeds.ProvidedModule` to the module, **dihedral** will add the module as a parameter to the generated component. Instead of
+By adding a non-exported field of type `embeds.ProvidedModule` to the module, **dihedral** will add the module as a parameter to the generated component. Instead of
 
     func NewServiceComponent() *GeneratedComponent
 
