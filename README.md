@@ -8,14 +8,15 @@
 
 Create a type you want injected
 
-    type MyFieldType string
+    type MyFieldType string   // Name this string "MyFieldType"
     type InjectMe struct {
-        inject  embeds.Inject
-        MyField MyFieldType
+        inject  embeds.Inject // Auto-inject this struct 
+        MyField MyFieldType   // Inject a string with name "MyFieldType"
     }
 
 Create a module to provide non-injected dependencies
 
+    // Each public method on this struct provides a type
     type MyModule struct {}
     func (m *MyModule) ProvidesMyField() MyFieldType {
         return MyFieldType("Hello there")
@@ -23,6 +24,7 @@ Create a module to provide non-injected dependencies
 
 Create a component as the root of the dependency injection
 
+    // A component tells dihedral which modules to use and the root of the DI graph
     interface Component {
         Modules() *MyModule 
         InjectMePlease() *InjectMe
@@ -35,6 +37,7 @@ Generate the bindings
 Use the bindings
 
     func main() {
+        // dihedral generates the digen package
         component := digen.NewComponent()
         injected := component.InjectMePlease()
         fmt.Println(string(injected.MyField)) # Prints "Hello there"
