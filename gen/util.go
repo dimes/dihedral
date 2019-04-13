@@ -15,5 +15,6 @@ func SanitizeName(name *types.Named) string {
 	sanitized := typeutil.IDFromNamed(name)
 	sanitized = strings.ReplaceAll(sanitized, "/", "_")
 	sanitized = strings.ReplaceAll(sanitized, ".", "_")
+	sanitized = strings.ReplaceAll(sanitized, "-", "_")
 	return sanitized
 }
