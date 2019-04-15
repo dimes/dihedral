@@ -156,6 +156,6 @@ It can be used like this
 ### Differences from Wire
 
 Wire, Google's injection framework, is another compile time framework for Go. Both frameworks are inspired
-by Dagger. **dihedral** differs from Wire in that **dihedral** focuses on auto-injected components and self-contained modules, whereas Wire focuses more on type registration via provider functions. **dihedral** also leverages struct receivers for better organization of runtime provided types. These features make **dihedral** a pleasure to work with. 
+by Dagger. **dihedral** differs from Wire in that **dihedral** focuses on auto-injected components and self-contained modules, whereas Wire focuses more on type registration via provider functions. **dihedral** also leverages struct receivers for better organization of runtime provided types. These features make **dihedral** nicer to work with. 
 
 **dihedral**'s component structure also enables one to have multiple injected components that share modules. The type annotation system allows for auto-injected components, provided modules, and, in the future, sub-components and have a different scope than the parent component.
