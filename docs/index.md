@@ -44,4 +44,4 @@ Use the bindings
         fmt.Println(string(injected.Endpoint)) # Prints "http://hello.world"
     }
 
-For more information, read the [docs](/docs).
+For more information, read the [docs](/dihedral/docs).
