@@ -3,8 +3,8 @@ package main
 import (
 	"fmt"
 
-	"github.com/dimes/dihedral/example/bindings/digen"
-	"github.com/dimes/dihedral/example/dbstore"
+	"github.com/dimes/dihedral/internal/example/bindings/digen"
+	"github.com/dimes/dihedral/internal/example/dbstore"
 )
 
 func main() {

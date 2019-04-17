@@ -42,7 +42,7 @@ Use the bindings
         fmt.Println(string(injected.Endpoint)) # Prints "http://hello.world"
     }
 
-See the [example](example/) for a more detailed overview.
+See the [example](internal/example/) for a more detailed overview.
 
 ## Concepts 
 

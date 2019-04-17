@@ -6,8 +6,8 @@ package bindings
 import (
 	"time"
 
-	"github.com/dimes/dihedral/example"
-	"github.com/dimes/dihedral/example/dbstore"
+	"github.com/dimes/dihedral/internal/example"
+	"github.com/dimes/dihedral/internal/example/dbstore"
 )
 
 // DI has four concepts:

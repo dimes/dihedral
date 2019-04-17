@@ -4,7 +4,7 @@ import (
 	"time"
 
 	"github.com/dimes/dihedral/embeds"
-	"github.com/dimes/dihedral/example/dbstore"
+	"github.com/dimes/dihedral/internal/example/dbstore"
 )
 
 // ServiceTimeout is the amount of time the service has to handle the operation
