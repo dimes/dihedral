@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="{{ site.lang | default: "en-US" }}">
+
+<head>
+    <meta charset="UTF-8">
+
+    {% seo %}
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="theme-color" content="#157878">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <link rel="stylesheet" href="{{ '/assets/css/style.css?v=' | append: site.github.build_revision | relative_url }}">
+    <style>
+        html {
+            min-height: 100%;
+            position: relative;
+        }
+
+        body {
+            min-height: 100%;
+        }
+
+        .docs-header {
+            padding: 0;
+            margin: 0;
+            text-align: start;
+            margin-left: 15rem;
+        }
+
+        .docs-header h1 {
+            font-size: 1.3rem;
+            margin: 0;
+            padding: 1.1rem;
+            line-height: 1;
+        }
+
+        .docs-header h1 a {
+            text-decoration: none;
+            color: white;
+        }
+
+        .sidebar-and-content {
+            display: flex;
+        }
+
+        .sidebar {
+            padding-top: 1.5rem;
+            position: absolute;
+            top: 0;
+            left: 0;
+            bottom: 0;
+            width: 15rem;
+            background-color: white;
+            box-shadow: 0px 0px 38px -24px rgba(0, 0, 0, 1);
+
+            font-size: 0.9rem;
+        }
+
+        .sidebar ol {
+            margin: 0;
+            padding: 0;
+            margin-left: 2rem;
+        }
+
+        .sidebar li {
+            list-style: none;
+            margin: 0;
+            padding: 0;
+            margin-top: 0.5rem;
+        }
+
+        .main-content {
+            margin: 0;
+            padding: 0;
+            margin-left: calc(15rem + 38px);
+            max-width: 50rem;
+            margin-top: 1rem;
+        }
+
+        .sidebar .title {
+            margin-left: 2rem;
+            font-size: 0.8rem;
+            font-weight: bold;
+            text-transform: uppercase;
+            color: black;
+        }
+    </style>
+</head>
+
+<body>
+    <header class="page-header docs-header" role="banner">
+        <h1 class="project-name">
+            <a href="/">
+                {{ page.title | default: site.title | default: site.github.repository_name }}
+            </a>
+        </h1>
+    </header>
+
+    <div class="sidebar">
+        <div class="title">Contents</div>
+        <ol>
+            <li><a href="/docs">Concepts</a></li>
+            <ol>
+                <li><a href="/docs/provider-modules">Provider Modules</a></li>
+                <li><a href="/docs/binding-modules">Binding Modules</a></li>
+                <li><a href="/docs/struct-injection">Struct Injection</a></li>
+                <li><a href="/docs/components">Components</a></li>
+            </ol>
+            <li><a href="/docs/code-generation">Code Generation</a></li>
+        </ol>
+    </div>
+
+    <main id="content" class="main-content" role="main">
+        {{ content }}
+    </main>
+</body>
+
+</html>
