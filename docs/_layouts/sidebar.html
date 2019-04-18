@@ -26,6 +26,32 @@
             margin-left: 15rem;
         }
 
+        .hamburger {
+            display: none;
+        }
+
+        @media screen and (max-width: 900px) {
+            .docs-header {
+                margin-left: 0;
+                display: flex;
+                flex-direction: row;
+                align-items: center;
+            }
+
+            .hamburger {
+                width: 1.3rem;
+                height: 1.3rem;
+                margin-left: 1.1rem;
+                display: block;
+                cursor: pointer;
+
+                background-image: url("/dihedral/img/hamburger.svg");
+                background-repeat: no-repeat;
+                background-size: cover;
+                background-position: center center;
+            }
+        }
+
         .docs-header h1 {
             font-size: 1.3rem;
             margin: 0;
@@ -36,10 +62,6 @@
         .docs-header h1 a {
             text-decoration: none;
             color: white;
-        }
-
-        .sidebar-and-content {
-            display: flex;
         }
 
         .sidebar {
@@ -53,6 +75,47 @@
             box-shadow: 0px 0px 38px -24px rgba(0, 0, 0, 1);
 
             font-size: 0.9rem;
+            overflow: hidden;
+        }
+
+        .sidebar .close {
+            display: none;
+        }
+
+        @media screen and (max-width: 900px) {
+            .sidebar {
+                width: 0;
+
+                transition-property: width;
+                transition-duration: 0.3s;
+                transition-timing-function: ease-in-out;
+            }
+
+            .sidebar.open {
+                width: 15rem;
+            }
+
+            .sidebar .close {
+                display: block;
+                width: 0.75rem;
+                height: 0.75rem;
+                position: absolute;
+                margin-right: 1rem;
+                margin-top: 1rem;
+                top: 0;
+                right: 0;
+                cursor: pointer;
+                opacity: 0.5;
+
+                background-image: url("/dihedral/img/x.svg");
+                background-repeat: no-repeat;
+                background-size: cover;
+                background-position: center center;
+            }
+
+            .sidebar li {
+                white-space: nowrap;
+            }
         }
 
         .sidebar ol {
@@ -70,10 +133,16 @@
 
         .main-content {
             margin: 0;
-            padding: 0;
-            margin-left: calc(15rem + 38px);
+            padding: 0 2rem;
+            margin-left: 15rem;
             max-width: 50rem;
             margin-top: 1rem;
+        }
+
+        @media screen and (max-width: 900px) {
+            .main-content {
+                margin-left: 0;
+            }
         }
 
         .sidebar .title {
@@ -84,18 +153,35 @@
             color: black;
         }
     </style>
+    <script>
+        function toggleClass(id, className) {
+            let classList = document.querySelector(id).classList;
+
+            if (classList.contains(className)) {
+                classList.remove(className);
+            } else {
+                classList.add(className);
+            }
+        }
+
+        function removeClass(id, className) {
+
+        }
+    </script>
 </head>
 
 <body>
     <header class="page-header docs-header" role="banner">
-        <h1 class="project-name">
+        <div class="hamburger" onclick="toggleClass('#sidebar', 'open')"></div>
+        <h1 class=" project-name">
             <a href="/dihedral">
                 {{ page.title | default: site.title | default: site.github.repository_name }}
             </a>
         </h1>
     </header>
 
-    <div class="sidebar">
+    <div id="sidebar" class="sidebar">
+        <div class="close" onclick="toggleClass('#sidebar', 'open')"></div>
         <div class="title">Contents</div>
         <ol>
             <li><a href="/dihedral/docs">Concepts</a></li>
