@@ -38,15 +38,25 @@ type InjectionTarget struct {
 	IsPointer  bool
 }
 
-// ResolvedType represents a type that has been resolved via a module.
-// There are two possible ways a type can be resolved:
-// 1. Being bound via an interface module
-// 2. Being provided via a struct module
-type ResolvedType struct {
+// ResolvedType is an interface that represents a type provided by
+// an injection source. Currently, the only injection source is
+// via a provider module.
+type ResolvedType interface {
+	DebugInfo() string
+}
+
+// ModuleResolvedType represents a type that has been resolved via a module.
+type ModuleResolvedType struct {
 	Module    *structs.Struct
 	Method    *types.Func
 	Name      *types.Named
 	IsPointer bool
+}
+
+// DebugInfo implements ResolvedType DebugInfo
+func (m *ModuleResolvedType) DebugInfo() string {
+	return fmt.Sprintf("Module: %+v, method: %+v, type name: %+v, isPointer: %t",
+		m.Module, m.Method, m.Name, m.IsPointer)
 }
 
 // ResolveComponentModules resolves the modules for the component interface.
@@ -58,7 +68,7 @@ func ResolveComponentModules(
 	componentInterface *structs.Interface,
 ) (
 	[]*InjectionTarget,
-	map[string]*ResolvedType,
+	map[string]ResolvedType,
 	map[string]*structs.Struct,
 	error,
 ) {
@@ -73,7 +83,7 @@ func ResolveComponentModules(
 	}
 
 	seen := make(map[string]struct{})
-	providers := make(map[string]*ResolvedType)
+	providers := make(map[string]ResolvedType)
 	bindings := make(map[string]*structs.Struct)
 	for len(stack) > 0 {
 		node := stack[len(stack)-1]
@@ -229,7 +239,7 @@ func ResolveComponentModules(
 						return nil, nil, nil, fmt.Errorf("Binding %+v seen twice", resultID)
 					}
 
-					resolvedType := &ResolvedType{
+					resolvedType := &ModuleResolvedType{
 						Module:    module,
 						Method:    funcDefinition,
 						Name:      resultName,

@@ -33,7 +33,7 @@ type GeneratedComponent struct {
 	name                  string
 	targetsAndAssignments []*targetAndAssignment
 	factories             []*GeneratedFactory
-	providers             []*GeneratedProvider
+	moduleProviders       []*GeneratedModuleProvider
 }
 
 type injectionTarget struct {
@@ -55,7 +55,7 @@ func newInjectionTarget(targetType types.Type) *injectionTarget {
 func NewGeneratedComponent(
 	componentName string,
 	targets []*resolver.InjectionTarget,
-	providers map[string]*resolver.ResolvedType,
+	providers map[string]resolver.ResolvedType,
 	bindings map[string]*structs.Struct,
 ) (*GeneratedComponent, error) {
 	seenTargets := make(map[string]struct{})
@@ -66,7 +66,7 @@ func NewGeneratedComponent(
 	}
 
 	factories := make([]*GeneratedFactory, 0)
-	providerFuncs := make([]*GeneratedProvider, 0)
+	moduleProviderFuncs := make([]*GeneratedModuleProvider, 0)
 	for len(injectionStack) > 0 {
 		target := injectionStack[len(injectionStack)-1]
 		injectionStack = injectionStack[:len(injectionStack)-1]
@@ -114,13 +114,18 @@ func NewGeneratedComponent(
 			return nil, fmt.Errorf("Target %+v is not marked as injectable and has no provider", target)
 		}
 
-		providerFunc, err := NewGeneratedProvider(provider, providers, bindings)
-		if err != nil {
-			return nil, errors.Wrapf(err, "Error getting provider for %+v", provider)
-		}
+		switch typedProvider := provider.(type) {
+		case *resolver.ModuleResolvedType:
+			moduleProviderFunc, err := NewGeneratedProvider(typedProvider, providers, bindings)
+			if err != nil {
+				return nil, errors.Wrapf(err, "Error getting provider for %+v", provider)
+			}
 
-		providerFuncs = append(providerFuncs, providerFunc)
-		injectionStack = append(injectionStack, providerFunc.dependencies...)
+			moduleProviderFuncs = append(moduleProviderFuncs, moduleProviderFunc)
+			injectionStack = append(injectionStack, moduleProviderFunc.dependencies...)
+		default:
+			return nil, fmt.Errorf("Provider %+v is of unknown type", provider)
+		}
 	}
 
 	targetsAndAssignments := make([]*targetAndAssignment, 0)
@@ -143,7 +148,7 @@ func NewGeneratedComponent(
 		name:                  componentName,
 		targetsAndAssignments: targetsAndAssignments,
 		factories:             factories,
-		providers:             providerFuncs,
+		moduleProviders:       moduleProviderFuncs,
 	}, nil
 }
 
@@ -153,7 +158,7 @@ func (g *GeneratedComponent) ToSource(componentPackage string) map[string]string
 	imports := make(map[string]string)
 	seenModules := make(map[string]struct{})
 	moduleStructParams := make([]*structs.Struct, 0)
-	for _, provider := range g.providers {
+	for _, provider := range g.moduleProviders {
 		packagePath := provider.resolvedType.Module.Name.Obj().Pkg().Path()
 		if _, ok := imports[packagePath]; !ok {
 			imports[packagePath] = "di_import_" + strconv.Itoa(len(imports)+1)
@@ -253,7 +258,7 @@ func (g *GeneratedComponent) ToSource(componentPackage string) map[string]string
 		output[SanitizeName(factory.targetName)+"_Factory"] = factory.ToSource(componentPackage)
 	}
 
-	for _, provider := range g.providers {
+	for _, provider := range g.moduleProviders {
 		output[SanitizeName(provider.resolvedType.Name)+"_Provider"] = provider.ToSource(componentPackage)
 	}
 

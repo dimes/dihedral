@@ -1,8 +1,8 @@
 package digen
 import (
-	di_import_1 "github.com/dimes/dihedral/internal/example/dbstore"
 	di_import_2 "github.com/dimes/dihedral/internal/example/bindings"
 	di_import_3 "github.com/dimes/dihedral/internal/example"
+	di_import_1 "github.com/dimes/dihedral/internal/example/dbstore"
 )
 type GeneratedComponent struct {
 	github_com_dimes_dihedral_internal_example_dbstore_DBProviderModule *di_import_1.DBProviderModule

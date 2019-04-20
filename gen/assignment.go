@@ -59,7 +59,7 @@ func (p *providerAssignment) GetSourceAssignment() string {
 // AssignmentForFieldType returns an assignment for the given field type
 func AssignmentForFieldType(
 	rawFieldType types.Type,
-	providers map[string]*resolver.ResolvedType,
+	providers map[string]resolver.ResolvedType,
 	bindings map[string]*structs.Struct,
 ) (Assignment, error) {
 	var fieldName *types.Named
@@ -79,8 +79,13 @@ func AssignmentForFieldType(
 	}
 
 	if provider := providers[fieldID]; provider != nil {
-		fieldName = provider.Name
-		return NewProviderAssignment(fieldName), nil
+		typedProvider, ok := provider.(*resolver.ModuleResolvedType)
+		if ok {
+			fieldName = typedProvider.Name
+			return NewProviderAssignment(fieldName), nil
+		}
+
+		return nil, fmt.Errorf("Unknown provider type %+v", provider)
 	}
 
 	return NewFactoryAssignment(fieldName), nil

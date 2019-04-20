@@ -45,7 +45,7 @@ type GeneratedFactory struct {
 func NewGeneratedFactoryIfNeeded(
 	targetName *types.Named,
 	targetStruct *types.Struct,
-	providers map[string]*resolver.ResolvedType,
+	providers map[string]resolver.ResolvedType,
 	bindings map[string]*structs.Struct,
 ) (*GeneratedFactory, error) {
 	if targetStruct == nil {

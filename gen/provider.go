@@ -9,9 +9,10 @@ import (
 	"github.com/pkg/errors"
 )
 
-// GeneratedProvider is a single generated provider method on the component
-type GeneratedProvider struct {
-	resolvedType *resolver.ResolvedType
+// GeneratedModuleProvider is a single generated provider method on the component
+// from a module source
+type GeneratedModuleProvider struct {
+	resolvedType *resolver.ModuleResolvedType
 	assignments  []Assignment
 	dependencies []*injectionTarget
 }
@@ -26,10 +27,10 @@ type GeneratedProvider struct {
 //     )
 // }
 func NewGeneratedProvider(
-	resolvedType *resolver.ResolvedType,
-	providers map[string]*resolver.ResolvedType,
+	resolvedType *resolver.ModuleResolvedType,
+	providers map[string]resolver.ResolvedType,
 	bindings map[string]*structs.Struct,
-) (*GeneratedProvider, error) {
+) (*GeneratedModuleProvider, error) {
 	assignments := make([]Assignment, 0)
 	dependencies := make([]*injectionTarget, 0)
 	signature := resolvedType.Method.Type().(*types.Signature)
@@ -44,7 +45,7 @@ func NewGeneratedProvider(
 		dependencies = append(dependencies, newInjectionTarget(param.Type()))
 	}
 
-	return &GeneratedProvider{
+	return &GeneratedModuleProvider{
 		resolvedType: resolvedType,
 		assignments:  assignments,
 		dependencies: dependencies,
@@ -52,7 +53,7 @@ func NewGeneratedProvider(
 }
 
 // ToSource returns the source code for this provider.
-func (g *GeneratedProvider) ToSource(componentPackage string) string {
+func (g *GeneratedModuleProvider) ToSource(componentPackage string) string {
 	moduleVariableName := SanitizeName(g.resolvedType.Module.Name)
 	returnType := "target_pkg." + g.resolvedType.Name.Obj().Name()
 	if g.resolvedType.IsPointer {
