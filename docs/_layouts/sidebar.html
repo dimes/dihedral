@@ -84,16 +84,16 @@
 
         @media screen and (max-width: 900px) {
             .sidebar {
-                width: 0;
+                left: -15rem;
                 z-index: 10;
 
-                transition-property: width;
+                transition-property: left;
                 transition-duration: 0.3s;
                 transition-timing-function: ease-in-out;
             }
 
             .sidebar.open {
-                width: 15rem;
+                left: 0;
             }
 
             .sidebar .close {
@@ -112,10 +112,6 @@
                 background-repeat: no-repeat;
                 background-size: cover;
                 background-position: center center;
-            }
-
-            .sidebar li {
-                white-space: nowrap;
             }
         }
 
