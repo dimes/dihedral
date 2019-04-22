@@ -1,3 +1,15 @@
 language: go
 go:
 - 1.12
+
+env:
+  global:
+  - GO111MODULE=on
+
+script:
+= mkdir -p "${TRAVIS_BUILD_DIR}/go-out"
+- go build -o "${TRAVIS_BUILD_DIR}/go-out/dihedral"
+- export PATH="${TRAVIS_BUILD_DIR}/go-out":$PATH
+- go generate ./...
+- go vet ./...
+- go test ./...
