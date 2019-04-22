@@ -6,10 +6,10 @@ env:
   global:
   - GO111MODULE=on
 
-script:
-= mkdir -p "${TRAVIS_BUILD_DIR}/go-out"
-- go build -o "${TRAVIS_BUILD_DIR}/go-out/dihedral"
-- export PATH="${TRAVIS_BUILD_DIR}/go-out":$PATH
-- go generate -x ./... && git diff --exit-code; code=$?; git checkout -- .; (exit $code)
-- go vet ./...
-- go test ./...
+# script:
+# = mkdir -p "${TRAVIS_BUILD_DIR}/go-out"
+# - go build -o "${TRAVIS_BUILD_DIR}/go-out/dihedral"
+# - export PATH="${TRAVIS_BUILD_DIR}/go-out":$PATH
+# - go generate -x ./... && git diff --exit-code; code=$?; git checkout -- .; (exit $code)
+# - go vet ./...
+# - go test ./...
