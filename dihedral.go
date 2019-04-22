@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"flag"
 	"fmt"
+	"go/format"
 	"go/token"
 	"io/ioutil"
 	"os"
@@ -86,9 +87,14 @@ func main() {
 	generatedSource := component.ToSource(filepath.Base(outputDir))
 	os.MkdirAll(outputDir, os.ModePerm)
 	for name, file := range generatedSource {
+		formatted, err := format.Source([]byte(file))
+		if err != nil {
+			panic(err)
+		}
+
 		if err := ioutil.WriteFile(
 			path.Join(outputDir, name+".go"),
-			[]byte(file),
+			formatted,
 			os.ModePerm,
 		); err != nil {
 			panic(err)
