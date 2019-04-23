@@ -17,7 +17,7 @@ import (
 //    These modules define a mapping between an interface and an implementation.
 //    This allows injection of interface types backed by a concrete implementation.
 // 3. Injectable Structs are structs with a non-exported member of type embeds.Inject.
-//    These structs can automatically be constructed by DI with being provided by a provider
+//    These structs can automatically be constructed by DI without being provided by a provider
 //    module.
 // 4. Components: A component is an interface that defines the top-level types that can
 //    be injected. The component contains a list of modules to include for doing the
