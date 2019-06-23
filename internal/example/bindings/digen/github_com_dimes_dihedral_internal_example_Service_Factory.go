@@ -7,12 +7,14 @@ func factory_github_com_dimes_dihedral_internal_example_Service(generatedCompone
 	target := &target_pkg.Service{}
 	ServiceTimeout, err := generatedComponent.provides_github_com_dimes_dihedral_internal_example_ServiceTimeout()
 	if err != nil {
-		return nil, err
+		var zeroValue *target_pkg.Service
+		return zeroValue, err
 	}
 	target.ServiceTimeout = ServiceTimeout
 	DBStore, err := factory_github_com_dimes_dihedral_internal_example_dbstore_MemoryDBStore(generatedComponent)
 	if err != nil {
-		return nil, err
+		var zeroValue *target_pkg.Service
+		return zeroValue, err
 	}
 	target.DBStore = DBStore
 	return target, nil

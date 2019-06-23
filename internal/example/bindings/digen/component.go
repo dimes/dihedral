@@ -23,14 +23,16 @@ func NewServiceComponent(
 func (generatedComponent *GeneratedComponent) GetService() (*di_import_3.Service, error) {
 	obj, err := factory_github_com_dimes_dihedral_internal_example_Service(generatedComponent)
 	if err != nil {
-		return nil, err
+		var zeroValue *di_import_3.Service
+		return zeroValue, err
 	}
 	return obj, nil
 }
-func (generatedComponent *GeneratedComponent) GetServiceTimeout() di_import_3.ServiceTimeout {
+func (generatedComponent *GeneratedComponent) GetServiceTimeout() (di_import_3.ServiceTimeout, error) {
 	obj, err := generatedComponent.provides_github_com_dimes_dihedral_internal_example_ServiceTimeout()
 	if err != nil {
-		panic(err)
+		var zeroValue di_import_3.ServiceTimeout
+		return zeroValue, err
 	}
-	return obj
+	return obj, nil
 }

@@ -7,7 +7,8 @@ func factory_github_com_dimes_dihedral_internal_example_dbstore_MemoryDBStore(ge
 	target := &target_pkg.MemoryDBStore{}
 	Prefix, err := generatedComponent.provides_github_com_dimes_dihedral_internal_example_dbstore_Prefix()
 	if err != nil {
-		return nil, err
+		var zeroValue *target_pkg.MemoryDBStore
+		return zeroValue, err
 	}
 	target.Prefix = Prefix
 	return target, nil
