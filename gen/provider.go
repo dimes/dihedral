@@ -1,6 +1,7 @@
 package gen
 
 import (
+	"fmt"
 	"go/types"
 	"strings"
 
@@ -65,15 +66,32 @@ func (g *GeneratedModuleProvider) ToSource(componentPackage string) string {
 	builder.WriteString("package " + componentPackage + "\n")
 	builder.WriteString("import target_pkg \"" + g.resolvedType.Name.Obj().Pkg().Path() + "\"\n")
 	builder.WriteString(
-		"func (" + componentName + " *" + componentType + ") " + ProviderName(g.resolvedType.Name) + "() " +
-			returnType + " {\n")
+		"func (" +
+			componentName + " *" + componentType + ",\n" +
+			") " + ProviderName(g.resolvedType.Name) + "() (" + returnType + ", error) {\n")
+
+	for i, assignment := range g.assignments {
+		varName := fmt.Sprintf("param%d", i)
+		builder.WriteString("\t" + varName + ", err := " + assignment.GetSourceAssignment() + "\n")
+		builder.WriteString("\tif err != nil {\n")
+		builder.WriteString("\t\treturn nil, err\n")
+		builder.WriteString("\t}\n")
+	}
+
 	builder.WriteString(
 		"\treturn " + componentName + "." + moduleVariableName + "." + g.resolvedType.Method.Name() + "(\n")
 
-	for _, assignment := range g.assignments {
-		builder.WriteString("\t\t" + assignment.GetSourceAssignment() + ",\n")
+	for i := range g.assignments {
+		varName := fmt.Sprintf("param%d", i)
+		builder.WriteString("\t\t" + varName + ",\n")
 	}
-	builder.WriteString("\t)\n")
+	builder.WriteString("\t)")
+
+	if g.resolvedType.HasError {
+		builder.WriteString("\n")
+	} else {
+		builder.WriteString(", nil\n")
+	}
 
 	builder.WriteString("}\n")
 	return builder.String()

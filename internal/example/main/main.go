@@ -11,7 +11,14 @@ func main() {
 	component := digen.NewServiceComponent(&dbstore.DBProviderModule{
 		Prefix: "Hello",
 	})
-	service := component.GetService()
+
+	timeout := component.GetServiceTimeout()
+	fmt.Println("Service timeout is", timeout)
+
+	service, err := component.GetService()
+	if err != nil {
+		panic(err)
+	}
 
 	if err := service.SetValueInDBStore("World!"); err != nil {
 		panic(err)

@@ -3,9 +3,17 @@ package digen
 
 import target_pkg "github.com/dimes/dihedral/internal/example"
 
-func factory_github_com_dimes_dihedral_internal_example_Service(generatedComponent *GeneratedComponent) *target_pkg.Service {
+func factory_github_com_dimes_dihedral_internal_example_Service(generatedComponent *GeneratedComponent) (*target_pkg.Service, error) {
 	target := &target_pkg.Service{}
-	target.ServiceTimeout = generatedComponent.provides_github_com_dimes_dihedral_internal_example_ServiceTimeout()
-	target.DBStore = factory_github_com_dimes_dihedral_internal_example_dbstore_MemoryDBStore(generatedComponent)
-	return target
+	ServiceTimeout, err := generatedComponent.provides_github_com_dimes_dihedral_internal_example_ServiceTimeout()
+	if err != nil {
+		return nil, err
+	}
+	target.ServiceTimeout = ServiceTimeout
+	DBStore, err := factory_github_com_dimes_dihedral_internal_example_dbstore_MemoryDBStore(generatedComponent)
+	if err != nil {
+		return nil, err
+	}
+	target.DBStore = DBStore
+	return target, nil
 }

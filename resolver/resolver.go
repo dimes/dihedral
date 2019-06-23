@@ -36,6 +36,7 @@ type InjectionTarget struct {
 	Type       types.Type
 	Name       *types.Named
 	IsPointer  bool
+	HasError   bool
 }
 
 // ResolvedType is an interface that represents a type provided by
@@ -51,6 +52,7 @@ type ModuleResolvedType struct {
 	Method    *types.Func
 	Name      *types.Named
 	IsPointer bool
+	HasError  bool
 }
 
 // DebugInfo implements ResolvedType DebugInfo
@@ -212,8 +214,26 @@ func ResolveComponentModules(
 						continue
 					}
 
-					if signature.Results().Len() != 1 {
-						return nil, nil, nil, fmt.Errorf("Expecting exactly one result from %+v", signature)
+					if signature.Results().Len() == 0 || signature.Results().Len() > 2 {
+						return nil, nil, nil, fmt.Errorf("Expected at most two results from %+v", signature)
+					}
+
+					hasError := false
+					if signature.Results().Len() == 2 {
+						errType, ok := signature.Results().At(1).Type().(*types.Named)
+						if !ok {
+							return nil, nil, nil, fmt.Errorf("Expected %+v to return an error", signature)
+						}
+
+						if errType.Obj().Pkg() != nil {
+							return nil, nil, nil, fmt.Errorf("Expected %+v to return an error", signature)
+						}
+
+						if errType.Obj().Name() != "error" {
+							return nil, nil, nil, fmt.Errorf("Expected %+v to return an error", signature)
+						}
+
+						hasError = true
 					}
 
 					result := signature.Results().At(0)
@@ -244,6 +264,7 @@ func ResolveComponentModules(
 						Method:    funcDefinition,
 						Name:      resultName,
 						IsPointer: isPointer,
+						HasError:  hasError,
 					}
 
 					providers[resultID] = resolvedType
@@ -272,8 +293,32 @@ func getTargetsFromInterface(
 		}
 
 		signature := method.Type().(*types.Signature)
-		if signature.Params().Len() > 0 || signature.Results().Len() != 1 {
-			return nil, fmt.Errorf("Expected method %+v in %+v to have no arguments and one result",
+		if signature.Params().Len() > 0 {
+			return nil, fmt.Errorf("Expected method %+v in %+v to have no parameters",
+				method, interfaceType)
+		}
+
+		hasError := false
+		if signature.Results().Len() == 2 {
+			errType, ok := signature.Results().At(1).Type().(*types.Named)
+			if !ok {
+				return nil, fmt.Errorf("Expected %+v in %+v  to return an error", method, interfaceType)
+			}
+
+			if errType.Obj().Pkg() != nil {
+				return nil, fmt.Errorf("Expected %+v in %+v  to return an error", method, interfaceType)
+			}
+
+			if errType.Obj().Name() != "error" {
+				return nil, fmt.Errorf("Expected %+v in %+v  to return an error", method, interfaceType)
+			}
+
+			hasError = true
+		}
+
+		// Expect either one result or two results, the second one being an error
+		if !(signature.Results().Len() == 1 || (signature.Results().Len() == 2 && hasError)) {
+			return nil, fmt.Errorf("Expected method %+v in %+v to have one result and optional error",
 				method, interfaceType)
 		}
 
@@ -295,6 +340,7 @@ func getTargetsFromInterface(
 			Type:       realType,
 			Name:       namedType,
 			IsPointer:  isPointer,
+			HasError:   hasError,
 		})
 	}
 

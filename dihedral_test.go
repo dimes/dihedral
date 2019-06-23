@@ -12,8 +12,9 @@ func TestExampleInjection(t *testing.T) {
 	component := digen.NewServiceComponent(&dbstore.DBProviderModule{
 		Prefix: "Hello",
 	})
-	service := component.GetService()
+	service, err := component.GetService()
 
+	assert.NoError(t, err)
 	assert.NoError(t, service.SetValueInDBStore("World!"))
 	assert.Equal(t, "Hello World!", service.GetValueFromDBStore())
 }
