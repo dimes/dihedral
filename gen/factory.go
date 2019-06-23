@@ -33,16 +33,20 @@ var (
 //     return target
 // }
 type GeneratedFactory struct {
-	targetName   *types.Named
-	targetStruct *types.Struct
-	assignments  map[string]Assignment
-	dependencies []*injectionTarget
+	generatedComponentType     string
+	generatedComponentReceiver string
+	targetName                 *types.Named
+	targetStruct               *types.Struct
+	assignments                map[string]Assignment
+	dependencies               []*injectionTarget
 }
 
 // NewGeneratedFactoryIfNeeded generates a factory for the given struct.
 // If a factory cannot be generated, e.g. if the struct is not injectable,
 // nil is returned
 func NewGeneratedFactoryIfNeeded(
+	generatedComponentType string,
+	generatedComponentReceiver string,
 	targetName *types.Named,
 	targetStruct *types.Struct,
 	providers map[string]resolver.ResolvedType,
@@ -69,7 +73,11 @@ func NewGeneratedFactoryIfNeeded(
 			continue
 		}
 
-		assignment, err := AssignmentForFieldType(field.Type(), providers, bindings)
+		assignment, err := AssignmentForFieldType(
+			generatedComponentReceiver,
+			field.Type(),
+			providers,
+			bindings)
 		if err != nil {
 			return nil, errors.Wrapf(err, "Error generating bindings for %+v", targetStruct)
 		}
@@ -79,10 +87,12 @@ func NewGeneratedFactoryIfNeeded(
 	}
 
 	return &GeneratedFactory{
-		targetName:   targetName,
-		targetStruct: targetStruct,
-		assignments:  assignments,
-		dependencies: dependencies,
+		generatedComponentType:     generatedComponentType,
+		generatedComponentReceiver: generatedComponentReceiver,
+		targetName:                 targetName,
+		targetStruct:               targetStruct,
+		assignments:                assignments,
+		dependencies:               dependencies,
 	}, nil
 }
 
@@ -96,7 +106,8 @@ func (g *GeneratedFactory) ToSource(componentPackage string) string {
 	builder.WriteString("package " + componentPackage + "\n")
 	builder.WriteString("import target_pkg \"" + g.targetName.Obj().Pkg().Path() + "\"\n")
 	builder.WriteString(
-		"func " + FactoryName(g.targetName) + "(" + componentName + " *" + componentType +
+		"func " + FactoryName(g.targetName) +
+			"(" + g.generatedComponentReceiver + " *" + g.generatedComponentType +
 			") (*" + returnType + ", error) {\n")
 	builder.WriteString("\ttarget := &" + returnType + "{}\n")
 

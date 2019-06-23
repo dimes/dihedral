@@ -27,39 +27,48 @@ type Assignment interface {
 }
 
 type factoryAssignment struct {
-	typeName *types.Named
-	hasError bool
+	componentReceiverName string
+	typeName              *types.Named
 }
 
 // NewFactoryAssignment returns a factory-method based assignment
-func NewFactoryAssignment(typeName *types.Named) Assignment {
+func NewFactoryAssignment(
+	componentReceiverName string,
+	typeName *types.Named,
+) Assignment {
 	return &factoryAssignment{
-		typeName: typeName,
+		componentReceiverName: componentReceiverName,
+		typeName:              typeName,
 	}
 }
 
 func (f *factoryAssignment) GetSourceAssignment() string {
-	return FactoryName(f.typeName) + "(" + componentName + ")"
+	return FactoryName(f.typeName) + "(" + f.componentReceiverName + ")"
 }
 
 type providerAssignment struct {
-	typeName *types.Named
-	hasError bool
+	componentReceiverName string
+	typeName              *types.Named
 }
 
 // NewProviderAssignment returns a component provided assignment
-func NewProviderAssignment(typeName *types.Named) Assignment {
+func NewProviderAssignment(
+	componentReceiverName string,
+	typeName *types.Named,
+) Assignment {
 	return &providerAssignment{
-		typeName: typeName,
+		componentReceiverName: componentReceiverName,
+		typeName:              typeName,
 	}
 }
 
 func (p *providerAssignment) GetSourceAssignment() string {
-	return componentName + "." + ProviderName(p.typeName) + "()"
+	return p.componentReceiverName + "." + ProviderName(p.typeName) + "()"
 }
 
 // AssignmentForFieldType returns an assignment for the given field type
 func AssignmentForFieldType(
+	componentReceiverName string,
 	rawFieldType types.Type,
 	providers map[string]resolver.ResolvedType,
 	bindings map[string]*structs.Struct,
@@ -84,11 +93,11 @@ func AssignmentForFieldType(
 		typedProvider, ok := provider.(*resolver.ModuleResolvedType)
 		if ok {
 			fieldName = typedProvider.Name
-			return NewProviderAssignment(fieldName), nil
+			return NewProviderAssignment(componentReceiverName, fieldName), nil
 		}
 
 		return nil, fmt.Errorf("Unknown provider type %+v", provider)
 	}
 
-	return NewFactoryAssignment(fieldName), nil
+	return NewFactoryAssignment(componentReceiverName, fieldName), nil
 }

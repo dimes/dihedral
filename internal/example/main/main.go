@@ -8,7 +8,7 @@ import (
 )
 
 func main() {
-	component := digen.NewServiceComponent(&dbstore.DBProviderModule{
+	component := digen.NewDihedralServiceComponent(&dbstore.DBProviderModule{
 		Prefix: "Hello",
 	})
 

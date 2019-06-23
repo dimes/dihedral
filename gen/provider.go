@@ -13,9 +13,11 @@ import (
 // GeneratedModuleProvider is a single generated provider method on the component
 // from a module source
 type GeneratedModuleProvider struct {
-	resolvedType *resolver.ModuleResolvedType
-	assignments  []Assignment
-	dependencies []*injectionTarget
+	generatedComponentType     string
+	generatedComponentReceiver string
+	resolvedType               *resolver.ModuleResolvedType
+	assignments                []Assignment
+	dependencies               []*injectionTarget
 }
 
 // NewGeneratedProvider generates a provider function for the given resolved type
@@ -28,6 +30,8 @@ type GeneratedModuleProvider struct {
 //     )
 // }
 func NewGeneratedProvider(
+	generatedComponentType string,
+	generatedComponentReceiver string,
 	resolvedType *resolver.ModuleResolvedType,
 	providers map[string]resolver.ResolvedType,
 	bindings map[string]*structs.Struct,
@@ -37,7 +41,7 @@ func NewGeneratedProvider(
 	signature := resolvedType.Method.Type().(*types.Signature)
 	for i := 0; i < signature.Params().Len(); i++ {
 		param := signature.Params().At(i)
-		assignment, err := AssignmentForFieldType(param.Type(), providers, bindings)
+		assignment, err := AssignmentForFieldType(generatedComponentType, param.Type(), providers, bindings)
 		if err != nil {
 			return nil, errors.Wrapf(err, "Error generating binding for %+v", resolvedType)
 		}
@@ -47,9 +51,11 @@ func NewGeneratedProvider(
 	}
 
 	return &GeneratedModuleProvider{
-		resolvedType: resolvedType,
-		assignments:  assignments,
-		dependencies: dependencies,
+		generatedComponentType:     generatedComponentType,
+		generatedComponentReceiver: generatedComponentReceiver,
+		resolvedType:               resolvedType,
+		assignments:                assignments,
+		dependencies:               dependencies,
 	}, nil
 }
 
@@ -66,9 +72,8 @@ func (g *GeneratedModuleProvider) ToSource(componentPackage string) string {
 	builder.WriteString("package " + componentPackage + "\n")
 	builder.WriteString("import target_pkg \"" + g.resolvedType.Name.Obj().Pkg().Path() + "\"\n")
 	builder.WriteString(
-		"func (" +
-			componentName + " *" + componentType + ",\n" +
-			") " + ProviderName(g.resolvedType.Name) + "() (" + returnType + ", error) {\n")
+		"func (" + g.generatedComponentReceiver + " *" + g.generatedComponentType + ") " +
+			ProviderName(g.resolvedType.Name) + "() (" + returnType + ", error) {\n")
 
 	for i, assignment := range g.assignments {
 		varName := fmt.Sprintf("param%d", i)
@@ -80,7 +85,8 @@ func (g *GeneratedModuleProvider) ToSource(componentPackage string) string {
 	}
 
 	builder.WriteString(
-		"\treturn " + componentName + "." + moduleVariableName + "." + g.resolvedType.Method.Name() + "(\n")
+		"\treturn " + g.generatedComponentReceiver +
+			"." + moduleVariableName + "." + g.resolvedType.Method.Name() + "(\n")
 
 	for i := range g.assignments {
 		varName := fmt.Sprintf("param%d", i)

@@ -9,7 +9,7 @@ import (
 )
 
 func TestExampleInjection(t *testing.T) {
-	component := digen.NewServiceComponent(&dbstore.DBProviderModule{
+	component := digen.NewDihedralServiceComponent(&dbstore.DBProviderModule{
 		Prefix: "Hello",
 	})
 	service, err := component.GetService()

@@ -7,29 +7,29 @@ import (
 	di_import_2 "github.com/dimes/dihedral/internal/example/dbstore"
 )
 
-type GeneratedComponent struct {
+type DihedralServiceComponent struct {
 	github_com_dimes_dihedral_internal_example_bindings_ServiceModule   *di_import_1.ServiceModule
 	github_com_dimes_dihedral_internal_example_dbstore_DBProviderModule *di_import_2.DBProviderModule
 }
 
-func NewServiceComponent(
+func NewDihedralServiceComponent(
 	github_com_dimes_dihedral_internal_example_dbstore_DBProviderModule *di_import_2.DBProviderModule,
-) *GeneratedComponent {
-	return &GeneratedComponent{
+) *DihedralServiceComponent {
+	return &DihedralServiceComponent{
 		github_com_dimes_dihedral_internal_example_bindings_ServiceModule:   &di_import_1.ServiceModule{},
 		github_com_dimes_dihedral_internal_example_dbstore_DBProviderModule: github_com_dimes_dihedral_internal_example_dbstore_DBProviderModule,
 	}
 }
-func (generatedComponent *GeneratedComponent) GetService() (*di_import_3.Service, error) {
-	obj, err := factory_github_com_dimes_dihedral_internal_example_Service(generatedComponent)
+func (d *DihedralServiceComponent) GetService() (*di_import_3.Service, error) {
+	obj, err := factory_github_com_dimes_dihedral_internal_example_Service(d)
 	if err != nil {
 		var zeroValue *di_import_3.Service
 		return zeroValue, err
 	}
 	return obj, nil
 }
-func (generatedComponent *GeneratedComponent) GetServiceTimeout() (di_import_3.ServiceTimeout, error) {
-	obj, err := generatedComponent.provides_github_com_dimes_dihedral_internal_example_ServiceTimeout()
+func (d *DihedralServiceComponent) GetServiceTimeout() (di_import_3.ServiceTimeout, error) {
+	obj, err := d.provides_github_com_dimes_dihedral_internal_example_ServiceTimeout()
 	if err != nil {
 		var zeroValue di_import_3.ServiceTimeout
 		return zeroValue, err

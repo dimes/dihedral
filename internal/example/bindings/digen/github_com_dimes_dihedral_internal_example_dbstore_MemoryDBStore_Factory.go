@@ -3,9 +3,9 @@ package digen
 
 import target_pkg "github.com/dimes/dihedral/internal/example/dbstore"
 
-func factory_github_com_dimes_dihedral_internal_example_dbstore_MemoryDBStore(generatedComponent *GeneratedComponent) (*target_pkg.MemoryDBStore, error) {
+func factory_github_com_dimes_dihedral_internal_example_dbstore_MemoryDBStore(d *DihedralServiceComponent) (*target_pkg.MemoryDBStore, error) {
 	target := &target_pkg.MemoryDBStore{}
-	Prefix, err := generatedComponent.provides_github_com_dimes_dihedral_internal_example_dbstore_Prefix()
+	Prefix, err := d.provides_github_com_dimes_dihedral_internal_example_dbstore_Prefix()
 	if err != nil {
 		var zeroValue *target_pkg.MemoryDBStore
 		return zeroValue, err
