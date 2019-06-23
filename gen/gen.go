@@ -245,9 +245,28 @@ func (g *GeneratedComponent) ToSource(componentPackage string) map[string]string
 		}
 		assignment := targetAssignment.assignment
 		builder.WriteString(
-			"func (" + componentName + " *" + componentType + ") " + target.MethodName + "() " +
-				returnType + " {\n")
-		builder.WriteString("\treturn " + assignment.GetSourceAssignment() + "\n")
+			"func (" + componentName + " *" + componentType + ") " + target.MethodName + "() (" +
+				returnType)
+		if target.HasError {
+			builder.WriteString(", error")
+		}
+		builder.WriteString(") {\n")
+
+		builder.WriteString("\tobj, err := " + assignment.GetSourceAssignment() + "\n")
+		builder.WriteString("\tif err != nil {\n")
+		if target.HasError {
+			builder.WriteString("\t\treturn nil, err\n")
+		} else {
+			builder.WriteString("\t\tpanic(err)\n")
+		}
+		builder.WriteString("\t}\n")
+
+		builder.WriteString("\treturn obj")
+		if target.HasError {
+			builder.WriteString(", nil")
+		}
+		builder.WriteString("\n")
+
 		builder.WriteString("}\n")
 	}
 

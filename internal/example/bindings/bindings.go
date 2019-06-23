@@ -30,8 +30,12 @@ type ServiceComponent interface {
 	// The list of modules to include
 	Modules() (*ServiceModule, dbstore.DBBindingModule)
 
-	// The actual instance to return (fully injected)
-	GetService() *example.Service
+	// The actual instance to return (fully injected). Errors during injection
+	// will be returned in the error
+	GetService() (*example.Service, error)
+
+	// Non-interface / pointer types cannot return an error
+	GetServiceTimeout() example.ServiceTimeout
 }
 
 // ServiceModule illustrates how each method on a struct module can provide
@@ -39,6 +43,6 @@ type ServiceComponent interface {
 type ServiceModule struct{}
 
 // ProvidesServiceTimeout provides a time.Duration under the name ServiceTimeout
-func (s *ServiceModule) ProvidesServiceTimeout() example.ServiceTimeout {
-	return example.ServiceTimeout(5 * time.Second)
+func (s *ServiceModule) ProvidesServiceTimeout() (example.ServiceTimeout, error) {
+	return example.ServiceTimeout(5 * time.Second), nil
 }

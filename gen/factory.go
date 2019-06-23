@@ -96,14 +96,19 @@ func (g *GeneratedFactory) ToSource(componentPackage string) string {
 	builder.WriteString("import target_pkg \"" + g.targetName.Obj().Pkg().Path() + "\"\n")
 	builder.WriteString(
 		"func " + FactoryName(g.targetName) + "(" + componentName + " *" + componentType +
-			") *target_pkg." + g.targetName.Obj().Name() + " {\n")
+			") (*target_pkg." + g.targetName.Obj().Name() + ", error) {\n")
 	builder.WriteString("\ttarget := &target_pkg." + g.targetName.Obj().Name() + "{}\n")
 
 	for name, assignment := range g.assignments {
-		builder.WriteString("\ttarget." + name + " = " + assignment.GetSourceAssignment() + "\n")
+		builder.WriteString("\t" + name + ", err := " + assignment.GetSourceAssignment() + "\n")
+		builder.WriteString("\tif err != nil {\n")
+		builder.WriteString("\t\treturn nil, err")
+		builder.WriteString("\t}\n")
+
+		builder.WriteString("\ttarget." + name + " = " + name + "\n")
 	}
 
-	builder.WriteString("\treturn target\n")
+	builder.WriteString("\treturn target, nil\n")
 	builder.WriteString("}\n")
 
 	return builder.String()

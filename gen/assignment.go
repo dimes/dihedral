@@ -28,6 +28,7 @@ type Assignment interface {
 
 type factoryAssignment struct {
 	typeName *types.Named
+	hasError bool
 }
 
 // NewFactoryAssignment returns a factory-method based assignment
@@ -43,6 +44,7 @@ func (f *factoryAssignment) GetSourceAssignment() string {
 
 type providerAssignment struct {
 	typeName *types.Named
+	hasError bool
 }
 
 // NewProviderAssignment returns a component provided assignment

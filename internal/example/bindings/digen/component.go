@@ -3,23 +3,34 @@ package digen
 
 import (
 	di_import_3 "github.com/dimes/dihedral/internal/example"
-	di_import_2 "github.com/dimes/dihedral/internal/example/bindings"
-	di_import_1 "github.com/dimes/dihedral/internal/example/dbstore"
+	di_import_1 "github.com/dimes/dihedral/internal/example/bindings"
+	di_import_2 "github.com/dimes/dihedral/internal/example/dbstore"
 )
 
 type GeneratedComponent struct {
-	github_com_dimes_dihedral_internal_example_dbstore_DBProviderModule *di_import_1.DBProviderModule
-	github_com_dimes_dihedral_internal_example_bindings_ServiceModule   *di_import_2.ServiceModule
+	github_com_dimes_dihedral_internal_example_bindings_ServiceModule   *di_import_1.ServiceModule
+	github_com_dimes_dihedral_internal_example_dbstore_DBProviderModule *di_import_2.DBProviderModule
 }
 
 func NewServiceComponent(
-	github_com_dimes_dihedral_internal_example_dbstore_DBProviderModule *di_import_1.DBProviderModule,
+	github_com_dimes_dihedral_internal_example_dbstore_DBProviderModule *di_import_2.DBProviderModule,
 ) *GeneratedComponent {
 	return &GeneratedComponent{
+		github_com_dimes_dihedral_internal_example_bindings_ServiceModule:   &di_import_1.ServiceModule{},
 		github_com_dimes_dihedral_internal_example_dbstore_DBProviderModule: github_com_dimes_dihedral_internal_example_dbstore_DBProviderModule,
-		github_com_dimes_dihedral_internal_example_bindings_ServiceModule:   &di_import_2.ServiceModule{},
 	}
 }
-func (generatedComponent *GeneratedComponent) GetService() *di_import_3.Service {
-	return factory_github_com_dimes_dihedral_internal_example_Service(generatedComponent)
+func (generatedComponent *GeneratedComponent) GetService() (*di_import_3.Service, error) {
+	obj, err := factory_github_com_dimes_dihedral_internal_example_Service(generatedComponent)
+	if err != nil {
+		return nil, err
+	}
+	return obj, nil
+}
+func (generatedComponent *GeneratedComponent) GetServiceTimeout() di_import_3.ServiceTimeout {
+	obj, err := generatedComponent.provides_github_com_dimes_dihedral_internal_example_ServiceTimeout()
+	if err != nil {
+		panic(err)
+	}
+	return obj
 }
