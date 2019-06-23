@@ -15,14 +15,6 @@ import (
 	"github.com/pkg/errors"
 )
 
-const (
-	// All generated references to the component must refere to it by this name
-	componentName = "generatedComponent"
-
-	// The type of the generated component
-	componentType = "GeneratedComponent"
-)
-
 var (
 	providedModuleType = reflect.TypeOf(embeds.ProvidedModule{})
 )
@@ -30,10 +22,11 @@ var (
 // GeneratedComponent is the resolve of GenerateComponent and contains helper methods
 // for converting this directly into source
 type GeneratedComponent struct {
-	name                  string
-	targetsAndAssignments []*targetAndAssignment
-	factories             []*GeneratedFactory
-	moduleProviders       []*GeneratedModuleProvider
+	generatedTypeName          string
+	generatedComponentReceiver string
+	targetsAndAssignments      []*targetAndAssignment
+	factories                  []*GeneratedFactory
+	moduleProviders            []*GeneratedModuleProvider
 }
 
 type injectionTarget struct {
@@ -65,6 +58,8 @@ func NewGeneratedComponent(
 		injectionStack = append(injectionStack, newInjectionTarget(target.Type))
 	}
 
+	generatedTypeName := "Dihedral" + componentName
+	generatedComponentReceiver := "d"
 	factories := make([]*GeneratedFactory, 0)
 	moduleProviderFuncs := make([]*GeneratedModuleProvider, 0)
 	for len(injectionStack) > 0 {
@@ -98,7 +93,13 @@ func NewGeneratedComponent(
 		}
 		seenTargets[targetID] = struct{}{}
 
-		factory, err := NewGeneratedFactoryIfNeeded(targetName, targetStruct, providers, bindings)
+		factory, err := NewGeneratedFactoryIfNeeded(
+			generatedTypeName,
+			generatedComponentReceiver,
+			targetName,
+			targetStruct,
+			providers,
+			bindings)
 		if err != nil {
 			return nil, errors.Wrapf(err, "Error getting factory for target %+v", targetStruct)
 		}
@@ -116,7 +117,12 @@ func NewGeneratedComponent(
 
 		switch typedProvider := provider.(type) {
 		case *resolver.ModuleResolvedType:
-			moduleProviderFunc, err := NewGeneratedProvider(typedProvider, providers, bindings)
+			moduleProviderFunc, err := NewGeneratedProvider(
+				generatedTypeName,
+				generatedComponentReceiver,
+				typedProvider,
+				providers,
+				bindings)
 			if err != nil {
 				return nil, errors.Wrapf(err, "Error getting provider for %+v", provider)
 			}
@@ -131,6 +137,7 @@ func NewGeneratedComponent(
 	targetsAndAssignments := make([]*targetAndAssignment, 0)
 	for _, target := range targets {
 		assignment, err := AssignmentForFieldType(
+			generatedComponentReceiver,
 			target.Type,
 			providers,
 			bindings)
@@ -145,10 +152,11 @@ func NewGeneratedComponent(
 	}
 
 	return &GeneratedComponent{
-		name:                  componentName,
-		targetsAndAssignments: targetsAndAssignments,
-		factories:             factories,
-		moduleProviders:       moduleProviderFuncs,
+		generatedTypeName:          generatedTypeName,
+		generatedComponentReceiver: generatedComponentReceiver,
+		targetsAndAssignments:      targetsAndAssignments,
+		factories:                  factories,
+		moduleProviders:            moduleProviderFuncs,
 	}, nil
 }
 
@@ -194,7 +202,7 @@ func (g *GeneratedComponent) ToSource(componentPackage string) map[string]string
 
 	builder.WriteString(")\n")
 
-	builder.WriteString("type " + componentType + " struct {\n")
+	builder.WriteString("type " + g.generatedTypeName + " struct {\n")
 	for _, module := range moduleStructParams {
 		moduleImportName := imports[module.Name.Obj().Pkg().Path()]
 		moduleTypeName := module.Name.Obj().Name()
@@ -204,7 +212,7 @@ func (g *GeneratedComponent) ToSource(componentPackage string) map[string]string
 	}
 	builder.WriteString("}\n")
 
-	builder.WriteString("func New" + g.name + "(\n")
+	builder.WriteString("func New" + g.generatedTypeName + "(\n")
 	for _, module := range moduleStructParams {
 		if !typeutil.HasFieldOfType(module.Type, providedModuleType) {
 			continue
@@ -216,8 +224,8 @@ func (g *GeneratedComponent) ToSource(componentPackage string) map[string]string
 		builder.WriteString(
 			"\t" + moduleVariableName + " *" + moduleImportName + "." + moduleTypeName + ",\n")
 	}
-	builder.WriteString(") *" + componentType + " {\n")
-	builder.WriteString("\t return &" + componentType + "{\n")
+	builder.WriteString(") *" + g.generatedTypeName + " {\n")
+	builder.WriteString("\t return &" + g.generatedTypeName + "{\n")
 	for _, module := range moduleStructParams {
 		moduleImportName := imports[module.Name.Obj().Pkg().Path()]
 		moduleTypeName := module.Name.Obj().Name()
@@ -245,7 +253,8 @@ func (g *GeneratedComponent) ToSource(componentPackage string) map[string]string
 		}
 		assignment := targetAssignment.assignment
 		builder.WriteString(
-			"func (" + componentName + " *" + componentType + ") " + target.MethodName + "() (" +
+			"func (" + g.generatedComponentReceiver +
+				" *" + g.generatedTypeName + ") " + target.MethodName + "() (" +
 				returnType)
 		if target.HasError {
 			builder.WriteString(", error")
