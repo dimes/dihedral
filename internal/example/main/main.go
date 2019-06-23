@@ -12,7 +12,11 @@ func main() {
 		Prefix: "Hello",
 	})
 
-	timeout := component.GetServiceTimeout()
+	timeout, err := component.GetServiceTimeout()
+	if err != nil {
+		panic(err)
+	}
+
 	fmt.Println("Service timeout is", timeout)
 
 	service, err := component.GetService()

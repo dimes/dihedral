@@ -35,7 +35,7 @@ type ServiceComponent interface {
 	GetService() (*example.Service, error)
 
 	// Non-interface / pointer types cannot return an error
-	GetServiceTimeout() example.ServiceTimeout
+	GetServiceTimeout() (example.ServiceTimeout, error)
 }
 
 // ServiceModule illustrates how each method on a struct module can provide

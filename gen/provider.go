@@ -74,7 +74,8 @@ func (g *GeneratedModuleProvider) ToSource(componentPackage string) string {
 		varName := fmt.Sprintf("param%d", i)
 		builder.WriteString("\t" + varName + ", err := " + assignment.GetSourceAssignment() + "\n")
 		builder.WriteString("\tif err != nil {\n")
-		builder.WriteString("\t\treturn nil, err\n")
+		builder.WriteString("\t\tvar zeroValue " + returnType + "\n")
+		builder.WriteString("\t\treturn zeroValue, err\n")
 		builder.WriteString("\t}\n")
 	}
 

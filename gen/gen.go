@@ -255,7 +255,8 @@ func (g *GeneratedComponent) ToSource(componentPackage string) map[string]string
 		builder.WriteString("\tobj, err := " + assignment.GetSourceAssignment() + "\n")
 		builder.WriteString("\tif err != nil {\n")
 		if target.HasError {
-			builder.WriteString("\t\treturn nil, err\n")
+			builder.WriteString("\t\tvar zeroValue " + returnType + "\n")
+			builder.WriteString("\t\treturn zeroValue, err\n")
 		} else {
 			builder.WriteString("\t\tpanic(err)\n")
 		}
