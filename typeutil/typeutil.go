@@ -3,16 +3,13 @@ package typeutil
 
 import (
 	"fmt"
-	"go/ast"
-	"go/build"
-	"go/importer"
-	"go/parser"
 	"go/token"
 	"go/types"
 	"reflect"
 
 	"github.com/dimes/dihedral/structs"
 	"github.com/pkg/errors"
+	"golang.org/x/tools/go/packages"
 )
 
 // IDFromNamed returns a unique string for the given name
@@ -27,36 +24,16 @@ func FindInterface(
 	packageName string,
 	interfaceName string,
 ) (*structs.Interface, error) {
-	imported, err := build.Default.Import(packageName, ".", build.FindOnly)
+	config := &packages.Config{
+		Mode: packages.LoadSyntax,
+	}
+	pkgs, err := packages.Load(config, packageName)
 	if err != nil {
-		return nil, errors.Wrapf(err, "Error importing package %s", packageName)
+		return nil, errors.Wrapf(err, "Error loading package %s", packageName)
 	}
 
-	packages, err := parser.ParseDir(fileSet, imported.Dir, nil, 0)
-	if err != nil {
-		return nil, errors.Wrapf(err, "Error parsing package %s", packageName)
-	}
-
-	for _, astPkg := range packages {
-		var files []*ast.File
-		for _, file := range astPkg.Files {
-			files = append(files, file)
-		}
-
-		info := &types.Info{
-			Defs: make(map[*ast.Ident]types.Object),
-		}
-
-		conf := types.Config{
-			Importer: importer.ForCompiler(fileSet, "source", nil),
-		}
-
-		_, err := conf.Check(packageName, fileSet, files, info)
-		if err != nil {
-			return nil, errors.Wrapf(err, "Error getting defs for package %s", packageName)
-		}
-
-		for identifier, definition := range info.Defs {
+	for _, astPkg := range pkgs {
+		for identifier, definition := range astPkg.TypesInfo.Defs {
 			if !identifier.IsExported() {
 				continue
 			}
