@@ -12,9 +12,13 @@ func TestExampleInjection(t *testing.T) {
 	component := digen.NewDihedralServiceComponent(&dbstore.DBProviderModule{
 		Prefix: "Hello",
 	})
-	service, err := component.GetService()
 
+	service, err := component.GetService()
 	assert.NoError(t, err)
 	assert.NoError(t, service.SetValueInDBStore("World!"))
 	assert.Equal(t, "Hello World!", service.GetValueFromDBStore())
+
+	serviceTimeout, err := component.GetServiceTimeout()
+	assert.NoError(t, err)
+	assert.Equal(t, 5000000000, serviceTimeout)
 }
