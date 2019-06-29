@@ -8,7 +8,40 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="theme-color" content="#157878">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-  <link rel="stylesheet" href="{{ '/assets/css/style.css?v=' | append: site.github.build_revision | relative_url }}">
+  <link rel="stylesheet" type="text/css" href="/dihedral/styles/style.css">
+  <style>
+    header {
+      text-align: center;
+      display: flex;
+      flex-direction: column;
+      min-height: 50vh;
+      justify-content: center;
+      padding: 0 15px;
+    }
+
+    header h1 {
+      font-size: 33pt;
+      text-transform: uppercase;
+      letter-spacing: 2pt;
+      margin: 30px 0;
+      padding: 0;
+    }
+
+    header h2 {
+      padding: 0;
+      margin: 20px 0;
+      font-size: 18pt;
+    }
+
+    header .nav {
+      padding-top: 20px;
+    }
+
+    header .headerButton {
+      padding: 20px;
+      color: black;
+    }
+  </style>
 </head>
 
 <body>
@@ -16,8 +49,10 @@
     <h1 class="project-name">{{ page.title | default: site.title | default: site.github.repository_name }}</h1>
     <h2 class="project-tagline">
       {{ page.description | default: site.description | default: site.github.project_tagline }}</h2>
-    <a href="{{ site.github.repository_url }}" class="btn">GitHub</a>
-    <a href="/dihedral/docs" class="btn">Docs</a>
+    <div class="nav">
+      <a class="headerButton" href="{{ site.github.repository_url }}" class="btn">GitHub</a>
+      <a class="headerButton" href="/dihedral/docs" class="btn">Docs</a>
+    </div>
   </header>
 
   <main id="content" class="main-content" role="main">

@@ -1,0 +1,90 @@
+@font-face {
+    font-family: "Big Caslon Medium";
+    src: url(/dihedral/fonts/big-caslon-medium.ttf) format('truetype');
+}
+
+* {
+    padding: 0;
+    margin: 0;
+    box-sizing: border-box;
+}
+
+html {
+    min-height: 100%;
+    position: relative;
+}
+
+body {
+    min-height: 100%;
+    font-family: "Big Caslon Medium", serif;
+}
+
+a {
+    color: black;
+}
+
+.main-content {
+    padding: 20px;
+    max-width: 800px;
+    margin: 0 auto;
+}
+
+.main-content h1 {
+    font-size: 18pt;
+    margin-bottom: 15px;
+}
+
+.main-content h2 {
+    font-size: 18pt;
+    margin-bottom: 15px;
+}
+
+.main-content h4 {
+    font-size: 13pt;
+    margin-bottom: 15px;
+}
+
+.main-content p {
+    margin: 20px 0;
+}
+
+.main-content pre {
+    padding: 0.8rem;
+    overflow: auto;
+    font-size: 0.9rem;
+    line-height: 1.45;
+    border-radius: 0.3rem;
+    padding: 0.8rem;
+    margin-top: 0;
+    margin-bottom: 1rem;
+    font: 1rem Consolas, "Liberation Mono", Menlo, Courier, monospace;
+    font-size: 1rem;
+    line-height: normal;
+    color: #567482;
+    word-wrap: normal;
+    background-color: #f3f6fa;
+    border: solid 1px #dce6f0;
+    border-radius: 0.3rem;
+}
+
+.main-content pre code {
+    display: inline;
+    max-width: initial;
+    padding: 0;
+    margin: 0;
+    overflow: initial;
+    line-height: inherit;
+    word-wrap: normal;
+    border: 0;
+
+    padding: 0;
+    margin: 0;
+    font-size: 0.9rem;
+    color: #567482;
+    word-break: normal;
+    white-space: pre;
+    background: transparent;
+    background-color: transparent;
+    border: 0;
+}
+  

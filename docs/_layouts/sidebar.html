@@ -8,22 +8,14 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="theme-color" content="#157878">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <link rel="stylesheet" href="{{ '/assets/css/style.css?v=' | append: site.github.build_revision | relative_url }}">
+    <link rel="stylesheet" type="text/css" href="/dihedral/styles/style.css">
     <style>
-        html {
-            min-height: 100%;
-            position: relative;
-        }
-
-        body {
-            min-height: 100%;
-        }
-
         .docs-header {
             padding: 0;
             margin: 0;
             text-align: start;
             margin-left: 15rem;
+            border-bottom: 1px solid black;
         }
 
         .hamburger {
@@ -57,11 +49,13 @@
             margin: 0;
             padding: 1.1rem;
             line-height: 1;
+            text-transform: uppercase;
         }
 
         .docs-header h1 a {
             text-decoration: none;
-            color: white;
+            color: black;
+            letter-spacing: 2px;
         }
 
         .sidebar {
@@ -171,7 +165,7 @@
     <header class="page-header docs-header" role="banner">
         <div class="hamburger" onclick="toggleClass('#sidebar', 'open')"></div>
         <h1 class=" project-name">
-            <a href="/dihedral">
+            <a href="/dihedral/">
                 {{ page.title | default: site.title | default: site.github.repository_name }}
             </a>
         </h1>
