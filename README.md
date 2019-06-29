@@ -8,7 +8,7 @@
 
     > go get -u github.com/dimes/dihedral
 
-Create a type you want injected
+Create a type you want injected:
 
     type ServiceEndpoint string  // Name this string "ServiceEndpoint"
     type Service struct {
@@ -16,7 +16,7 @@ Create a type you want injected
         Endpoint ServiceEndpoint // Inject a string with name "ServiceEndpoint"
     }
 
-Create a module to provide non-injected dependencies
+Create a module to provide non-injected dependencies:
 
     // Each public method on this struct provides a type
     type ServiceModule struct {}
@@ -24,22 +24,28 @@ Create a module to provide non-injected dependencies
         return ServiceEndpoint("http://hello.world")
     }
 
-Create a component as the root of the dependency injection
+Create a component as the root of the dependency injection:
 
-    interface ServiceComponent {
-        Modules() *MyModule      // Tells dihedral which modules to include
-        InjectService() *Service // Tells dihedral the root of the DI graph
+    type ServiceComponent interface {
+        InjectService() *Service
+    }
+
+Create a definition with the target component and the module configuration:
+
+    type ServiceDefinition interface {
+        Modules() (*ServiceModule, dbstore.DBBindingModule)
+        Target() ServiceComponent
     }
 
 Generate the bindings
 
-    > dihedral -component ServiceComponent
+    > dihedral -definition ServiceDefinition
 
 Use the bindings
 
     func main() {
         // dihedral generates the digen package
-        component := digen.ServiceComponent()
+        component := digen.NewDihedralServiceComponent()
         service := component.InjectService()
         fmt.Println(string(injected.Endpoint)) # Prints "http://hello.world"
     }
