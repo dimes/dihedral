@@ -17,6 +17,7 @@ import (
 
 const (
 	modulesFunc = "Modules"
+	targetFunc  = "Target"
 )
 
 var (
@@ -61,6 +62,14 @@ func (m *ModuleResolvedType) DebugInfo() string {
 		m.Module, m.Method, m.Name, m.IsPointer)
 }
 
+// ResolveResult is the result of ResolveComponentModules
+type ResolveResult struct {
+	TargetInterfaceName string                     // Name of the Target interface
+	Targets             []*InjectionTarget         // List of injection targets
+	Providers           map[string]ResolvedType    // Map of type to the provider of that type
+	Bindings            map[string]*structs.Struct // Map of interface to concrete type
+}
+
 // ResolveComponentModules resolves the modules for the component interface.
 // The return types are:
 // - List of struct modules (used to provide concrete types)
@@ -69,19 +78,17 @@ func ResolveComponentModules(
 	fileSet *token.FileSet,
 	componentInterface *structs.Interface,
 ) (
-	[]*InjectionTarget,
-	map[string]ResolvedType,
-	map[string]*structs.Struct,
+	*ResolveResult,
 	error,
 ) {
-	targets, err := getTargetsFromInterface(componentInterface.Type)
+	targetInterfaceName, targets, err := getTargetsFromInterface(componentInterface.Type)
 	if err != nil {
-		return nil, nil, nil, errors.Wrapf(err, "Error getting targets for %+v", componentInterface)
+		return nil, errors.Wrapf(err, "Error getting targets for %+v", componentInterface)
 	}
 
 	stack, err := getNodesFromInterface(componentInterface.Type, nil)
 	if err != nil {
-		return nil, nil, nil, errors.Wrapf(err, "Error getting modules for %+v", componentInterface)
+		return nil, errors.Wrapf(err, "Error getting modules for %+v", componentInterface)
 	}
 
 	seen := make(map[string]struct{})
@@ -95,7 +102,7 @@ func ResolveComponentModules(
 		case *types.Named:
 			nodeInterface, ok := typedNode.Underlying().(*types.Interface)
 			if !ok {
-				return nil, nil, nil, fmt.Errorf("Expected node %+v to be pointer or interface", typedNode)
+				return nil, fmt.Errorf("Expected node %+v to be pointer or interface", typedNode)
 			}
 
 			id := typeutil.IDFromNamed(typedNode)
@@ -106,7 +113,7 @@ func ResolveComponentModules(
 
 			nodeModules, err := getNodesFromInterface(nodeInterface, node)
 			if err != nil {
-				return nil, nil, nil, errors.Wrapf(err, "Error getting dependencies for %+v", nodeInterface)
+				return nil, errors.Wrapf(err, "Error getting dependencies for %+v", nodeInterface)
 			}
 
 			stack = append(stack, nodeModules...)
@@ -118,16 +125,16 @@ func ResolveComponentModules(
 
 			moduleBindings, err := extractBindings(bindingInterface)
 			if err != nil {
-				return nil, nil, nil, errors.Wrapf(err, "Error extracting bindings in %+v", nodeInterface)
+				return nil, errors.Wrapf(err, "Error extracting bindings in %+v", nodeInterface)
 			}
 
 			for id, boundStruct := range moduleBindings {
 				if _, ok := bindings[id]; ok {
-					return nil, nil, nil, fmt.Errorf("Binding %+v seen twice", id)
+					return nil, fmt.Errorf("Binding %+v seen twice", id)
 				}
 
 				if _, ok := providers[id]; ok {
-					return nil, nil, nil, fmt.Errorf("Binding %+v seen twice", id)
+					return nil, fmt.Errorf("Binding %+v seen twice", id)
 				}
 
 				bindings[id] = boundStruct
@@ -135,8 +142,7 @@ func ResolveComponentModules(
 		case *types.Pointer:
 			namedNode, ok := typedNode.Elem().(*types.Named)
 			if !ok {
-				return nil, nil, nil, fmt.Errorf("Expected pointer %+v to point to named element",
-					typedNode)
+				return nil, fmt.Errorf("Expected pointer %+v to point to named element", typedNode)
 			}
 
 			id := typeutil.IDFromNamed(namedNode)
@@ -147,7 +153,7 @@ func ResolveComponentModules(
 
 			structNode, ok := namedNode.Underlying().(*types.Struct)
 			if !ok {
-				return nil, nil, nil, fmt.Errorf("Expected pointer %+v to point to a struct", typedNode)
+				return nil, fmt.Errorf("Expected pointer %+v to point to a struct", typedNode)
 			}
 
 			module := &structs.Struct{
@@ -157,13 +163,13 @@ func ResolveComponentModules(
 
 			buildPackage, err := build.Default.Import(namedNode.Obj().Pkg().Path(), ".", build.FindOnly)
 			if err != nil {
-				return nil, nil, nil, errors.Wrapf(err, "Error importing %+v", namedNode)
+				return nil, errors.Wrapf(err, "Error importing %+v", namedNode)
 			}
 
 			packageDir := buildPackage.Dir
 			packages, err := parser.ParseDir(fileSet, packageDir, nil, 0)
 			if err != nil {
-				return nil, nil, nil, errors.Wrapf(err, "Error parsing package %s", packageDir)
+				return nil, errors.Wrapf(err, "Error parsing package %s", packageDir)
 			}
 
 			for _, astPkg := range packages {
@@ -182,7 +188,7 @@ func ResolveComponentModules(
 
 				_, err := conf.Check(namedNode.Obj().Pkg().Path(), fileSet, files, info)
 				if err != nil {
-					return nil, nil, nil, errors.Wrapf(err, "Error getting definitions for package %s",
+					return nil, errors.Wrapf(err, "Error getting definitions for package %s",
 						namedNode.Obj().Pkg().Path())
 				}
 
@@ -215,22 +221,22 @@ func ResolveComponentModules(
 					}
 
 					if signature.Results().Len() == 0 || signature.Results().Len() > 2 {
-						return nil, nil, nil, fmt.Errorf("Expected at most two results from %+v", signature)
+						return nil, fmt.Errorf("Expected at most two results from %+v", signature)
 					}
 
 					hasError := false
 					if signature.Results().Len() == 2 {
 						errType, ok := signature.Results().At(1).Type().(*types.Named)
 						if !ok {
-							return nil, nil, nil, fmt.Errorf("Expected %+v to return an error", signature)
+							return nil, fmt.Errorf("Expected %+v to return an error", signature)
 						}
 
 						if errType.Obj().Pkg() != nil {
-							return nil, nil, nil, fmt.Errorf("Expected %+v to return an error", signature)
+							return nil, fmt.Errorf("Expected %+v to return an error", signature)
 						}
 
 						if errType.Obj().Name() != "error" {
-							return nil, nil, nil, fmt.Errorf("Expected %+v to return an error", signature)
+							return nil, fmt.Errorf("Expected %+v to return an error", signature)
 						}
 
 						hasError = true
@@ -247,16 +253,16 @@ func ResolveComponentModules(
 					case *types.Named:
 						resultName = resultType
 					default:
-						return nil, nil, nil, fmt.Errorf("Result %+v is an unsupported type", result)
+						return nil, fmt.Errorf("Result %+v is an unsupported type", result)
 					}
 
 					resultID := typeutil.IDFromNamed(resultName)
 					if _, ok := bindings[resultID]; ok {
-						return nil, nil, nil, fmt.Errorf("Binding %+v seen twice", resultID)
+						return nil, fmt.Errorf("Binding %+v seen twice", resultID)
 					}
 
 					if _, ok := providers[resultID]; ok {
-						return nil, nil, nil, fmt.Errorf("Binding %+v seen twice", resultID)
+						return nil, fmt.Errorf("Binding %+v seen twice", resultID)
 					}
 
 					resolvedType := &ModuleResolvedType{
@@ -271,19 +277,52 @@ func ResolveComponentModules(
 				}
 			}
 		default:
-			return nil, nil, nil, fmt.Errorf("%+v is not a recognized module type", typedNode)
+			return nil, fmt.Errorf("%+v is not a recognized module type", typedNode)
 		}
 	}
 
-	return targets, providers, bindings, nil
+	return &ResolveResult{
+		TargetInterfaceName: targetInterfaceName,
+		Targets:             targets,
+		Providers:           providers,
+		Bindings:            bindings,
+	}, nil
 }
 
 func getTargetsFromInterface(
 	interfaceType *types.Interface,
-) ([]*InjectionTarget, error) {
+) (
+	string,
+	[]*InjectionTarget,
+	error,
+) {
+	targetMethod := typeutil.GetInterfaceMethod(interfaceType, targetFunc)
+	if targetMethod == nil {
+		return "", nil, fmt.Errorf("%+v has no Target() method", interfaceType)
+	}
+
+	targetSignature := targetMethod.Type().(*types.Signature)
+	if targetSignature.Params().Len() > 0 {
+		return "", nil, fmt.Errorf("Target method %+v has arguments. Expected exactly 0", targetMethod)
+	}
+
+	if targetSignature.Results().Len() != 1 {
+		return "", nil, fmt.Errorf("Expected exactly on return type on %+v", targetMethod)
+	}
+
+	targetNamedType, ok := targetSignature.Results().At(0).Type().(*types.Named)
+	if !ok {
+		return "", nil, fmt.Errorf("Return type of %+v is not a named type", targetSignature)
+	}
+
+	targetInterface, ok := targetNamedType.Underlying().(*types.Interface)
+	if !ok {
+		return "", nil, fmt.Errorf("Return type of %+v is not an interface", targetSignature)
+	}
+
 	targets := make([]*InjectionTarget, 0)
-	for i := 0; i < interfaceType.NumMethods(); i++ {
-		method := interfaceType.Method(i)
+	for i := 0; i < targetInterface.NumMethods(); i++ {
+		method := targetInterface.Method(i)
 		if !method.Exported() {
 			continue
 		}
@@ -294,23 +333,26 @@ func getTargetsFromInterface(
 
 		signature := method.Type().(*types.Signature)
 		if signature.Params().Len() > 0 {
-			return nil, fmt.Errorf("Expected method %+v in %+v to have no parameters",
-				method, interfaceType)
+			return "", nil, fmt.Errorf("Expected method %+v in %+v to have no parameters",
+				method, targetInterface)
 		}
 
 		hasError := false
 		if signature.Results().Len() == 2 {
 			errType, ok := signature.Results().At(1).Type().(*types.Named)
 			if !ok {
-				return nil, fmt.Errorf("Expected %+v in %+v  to return an error", method, interfaceType)
+				return "", nil, fmt.Errorf("Expected %+v in %+v  to return an error",
+					method, targetInterface)
 			}
 
 			if errType.Obj().Pkg() != nil {
-				return nil, fmt.Errorf("Expected %+v in %+v  to return an error", method, interfaceType)
+				return "", nil, fmt.Errorf("Expected %+v in %+v  to return an error",
+					method, targetInterface)
 			}
 
 			if errType.Obj().Name() != "error" {
-				return nil, fmt.Errorf("Expected %+v in %+v  to return an error", method, interfaceType)
+				return "", nil, fmt.Errorf("Expected %+v in %+v  to return an error",
+					method, targetInterface)
 			}
 
 			hasError = true
@@ -318,8 +360,8 @@ func getTargetsFromInterface(
 
 		// Expect either one result or two results, the second one being an error
 		if !(signature.Results().Len() == 1 || (signature.Results().Len() == 2 && hasError)) {
-			return nil, fmt.Errorf("Expected method %+v in %+v to have one result and optional error",
-				method, interfaceType)
+			return "", nil, fmt.Errorf("Expected method %+v in %+v to have one result and optional error",
+				method, targetInterface)
 		}
 
 		isPointer := false
@@ -332,7 +374,7 @@ func getTargetsFromInterface(
 			isPointer = true
 			namedType = targetType.Elem().(*types.Named)
 		default:
-			return nil, fmt.Errorf("Type %+v is not a valid target", targetType)
+			return "", nil, fmt.Errorf("Type %+v is not a valid target", targetType)
 		}
 
 		targets = append(targets, &InjectionTarget{
@@ -344,7 +386,7 @@ func getTargetsFromInterface(
 		})
 	}
 
-	return targets, nil
+	return targetNamedType.Obj().Name(), targets, nil
 }
 
 func getNodesFromInterface(
