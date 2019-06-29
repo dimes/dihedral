@@ -3,6 +3,7 @@ package main
 import (
 	"testing"
 
+	"github.com/dimes/dihedral/internal/example"
 	"github.com/dimes/dihedral/internal/example/bindings/digen"
 	"github.com/dimes/dihedral/internal/example/dbstore"
 	"github.com/stretchr/testify/assert"
@@ -20,5 +21,5 @@ func TestExampleInjection(t *testing.T) {
 
 	serviceTimeout, err := component.GetServiceTimeout()
 	assert.NoError(t, err)
-	assert.Equal(t, 5000000000, serviceTimeout)
+	assert.Equal(t, example.ServiceTimeout(5000000000), serviceTimeout)
 }
