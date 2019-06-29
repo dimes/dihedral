@@ -8,7 +8,114 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="theme-color" content="#157878">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-  <link rel="stylesheet" href="{{ '/assets/css/style.css?v=' | append: site.github.build_revision | relative_url }}">
+  <style>
+    @font-face {
+      font-family: "Big Caslon Medium";
+      src: url(/dihedral/fonts/big-caslon-medium.ttf) format('truetype');
+    }
+
+    * {
+      padding: 0;
+      margin: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      width: 100vw;
+      font-family: "Big Caslon Medium", serif;
+    }
+
+    a {
+      color: black;
+    }
+
+    header {
+      text-align: center;
+      display: flex;
+      flex-direction: column;
+      min-height: 50vh;
+      justify-content: center;
+      padding: 0 15px;
+    }
+
+    header h1 {
+      font-size: 33pt;
+      text-transform: uppercase;
+      letter-spacing: 2pt;
+      margin: 30px 0;
+      padding: 0;
+    }
+
+    header h2 {
+      padding: 0;
+      margin: 20px 0;
+      font-size: 18pt;
+    }
+
+    header .nav {
+      padding-top: 20px;
+    }
+
+    header .headerButton {
+      padding: 20px;
+      color: black;
+    }
+
+    .main-content {
+      padding: 20px;
+      max-width: 800px;
+      margin: 0 auto;
+    }
+
+    .main-content h1 {
+      font-size: 18pt;
+      margin-bottom: 15px;
+    }
+
+    .main-content p {
+      margin: 20px 0;
+    }
+
+    .main-content pre {
+      padding: 0.8rem;
+      overflow: auto;
+      font-size: 0.9rem;
+      line-height: 1.45;
+      border-radius: 0.3rem;
+      padding: 0.8rem;
+      margin-top: 0;
+      margin-bottom: 1rem;
+      font: 1rem Consolas, "Liberation Mono", Menlo, Courier, monospace;
+      font-size: 1rem;
+      line-height: normal;
+      color: #567482;
+      word-wrap: normal;
+      background-color: #f3f6fa;
+      border: solid 1px #dce6f0;
+      border-radius: 0.3rem;
+    }
+
+    .main-content pre code {
+      display: inline;
+      max-width: initial;
+      padding: 0;
+      margin: 0;
+      overflow: initial;
+      line-height: inherit;
+      word-wrap: normal;
+      border: 0;
+
+      padding: 0;
+      margin: 0;
+      font-size: 0.9rem;
+      color: #567482;
+      word-break: normal;
+      white-space: pre;
+      background: transparent;
+      background-color: transparent;
+      border: 0;
+    }
+  </style>
 </head>
 
 <body>
@@ -16,8 +123,10 @@
     <h1 class="project-name">{{ page.title | default: site.title | default: site.github.repository_name }}</h1>
     <h2 class="project-tagline">
       {{ page.description | default: site.description | default: site.github.project_tagline }}</h2>
-    <a href="{{ site.github.repository_url }}" class="btn">GitHub</a>
-    <a href="/dihedral/docs" class="btn">Docs</a>
+    <div class="nav">
+      <a class="headerButton" href="{{ site.github.repository_url }}" class="btn">GitHub</a>
+      <a class="headerButton" href="/dihedral/docs" class="btn">Docs</a>
+    </div>
   </header>
 
   <main id="content" class="main-content" role="main">
