@@ -3,12 +3,14 @@ package main
 import (
 	"fmt"
 
+	"github.com/dimes/dihedral/internal/example/bindings"
 	"github.com/dimes/dihedral/internal/example/bindings/digen"
 	"github.com/dimes/dihedral/internal/example/dbstore"
 )
 
 func main() {
-	component := digen.NewDihedralServiceComponent(&dbstore.DBProviderModule{
+	var component bindings.ServiceComponent
+	component = digen.NewDihedralServiceComponent(&dbstore.DBProviderModule{
 		Prefix: "Hello",
 	})
 

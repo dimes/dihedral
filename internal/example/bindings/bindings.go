@@ -1,4 +1,4 @@
-//go:generate dihedral -component ServiceComponent
+//go:generate dihedral -definition ServiceDefinition
 
 // Package bindings setups the the dependency bindings for a component
 package bindings
@@ -10,7 +10,7 @@ import (
 	"github.com/dimes/dihedral/internal/example/dbstore"
 )
 
-// DI has four concepts:
+// DI has five concepts:
 // 1. Provider Modules are structs whose methods return types that can be injected.
 // 2. Binding Modules are interfaces whose methods are of the form:
 //        func (m *Module) Binds(implementation *StructType) InterfaceType
@@ -20,16 +20,24 @@ import (
 //    These structs can automatically be constructed by DI without being provided by a provider
 //    module.
 // 4. Components: A component is an interface that defines the top-level types that can
-//    be injected. The component contains a list of modules to include for doing the
+//    be injected.
+// 5. InjectionDefinition: Contains a Target component and a list of modules to include for doing the
 //    injection
+
+// ServiceDefinition defines the target and the modules to include
+type ServiceDefinition interface {
+	// The list of modules to include
+	Modules() (*ServiceModule, dbstore.DBBindingModule)
+
+	// An implementation of the interface will be automatically generated. The values
+	// returned will be automatically instiated from their dependencies.
+	Target() ServiceComponent
+}
 
 // ServiceComponent defines the top level component. The return type of
 // the `Modules()` method is used as a list of modules to include for injection
 // All other methods are considered types to generate injections for
 type ServiceComponent interface {
-	// The list of modules to include
-	Modules() (*ServiceModule, dbstore.DBBindingModule)
-
 	// The actual instance to return (fully injected). Errors during injection
 	// will be returned in the error
 	GetService() (*example.Service, error)

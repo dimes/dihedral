@@ -38,17 +38,17 @@ func (c *ConfigModule) ProvidesTableName() TableName {
 
 By adding a non-exported field of type `embeds.ProvidedModule` to the module, **dihedral** will add the module as a parameter to the generated component. Instead of
 
-    func NewServiceComponent() *GeneratedComponent
+    func NewDihedralServiceComponent() *DihedralServiceComponent
 
 The generated function will look like 
 
-    func NewServiceComponent(module *ConfigModule) *GeneratedComponent
+    func NewDihedralServiceComponent(module *ConfigModule) *DihedralServiceComponent
 
 It can be used like this
 
     func main() {
         config := &Config{ TableName: "test-table" }
         module := &ConfigModule { Config: config }
-        component := digen.NewServiceComponent(module)
+        component := digen.NewDihedralServiceComponent(module)
         service := component.InjectService()
     }

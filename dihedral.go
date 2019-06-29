@@ -24,16 +24,16 @@ const (
 
 func main() {
 	var packageName string
-	var componentName string
+	var definitionName string
 	var outputDir string
 
 	flag.StringVar(&packageName, "package", "", "The name of the package containing the component")
-	flag.StringVar(&componentName, "component", "", "The name of the component")
+	flag.StringVar(&definitionName, "definition", "", "The name of the definition interface")
 	flag.StringVar(&outputDir, "output", "digen", "The directory to output generated source to")
 	flag.Parse()
 
-	if componentName == "" {
-		panic("-component must be set")
+	if definitionName == "" {
+		panic("-definition must be set")
 	}
 
 	if packageName == "" {
@@ -59,25 +59,31 @@ func main() {
 
 	fileSet := token.NewFileSet()
 
-	componentInterface, err := typeutil.FindInterface(fileSet, packageName, componentName)
+	definitionInterface, err := typeutil.FindInterface(fileSet, packageName, definitionName)
 	if err != nil {
 		panic(err)
 	}
 
-	if componentInterface == nil {
-		panic("Component interface not found")
+	if definitionInterface == nil {
+		panic("Definition interface not found")
 	}
 
-	targets, providers, bindings, err := resolver.ResolveComponentModules(fileSet, componentInterface)
+	result, err := resolver.ResolveComponentModules(fileSet, definitionInterface)
 	if err != nil {
 		panic(err)
 	}
 
+	targetInterfaceName := result.TargetInterfaceName
+	targets := result.Targets
+	providers := result.Providers
+	bindings := result.Bindings
+
+	fmt.Printf("Found target interface %s\n", targetInterfaceName)
 	fmt.Printf("Found targets: %+v\n", targets)
 	fmt.Printf("Found providers: %+v\n", providers)
 	fmt.Printf("Found bindings: %+v\n", bindings)
 
-	component, err := gen.NewGeneratedComponent(componentName, targets, providers, bindings)
+	component, err := gen.NewGeneratedComponent(targetInterfaceName, targets, providers, bindings)
 	if err != nil {
 		panic(err)
 	}
