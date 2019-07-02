@@ -3,6 +3,11 @@
     src: url(/dihedral/fonts/big-caslon-medium.ttf) format('truetype');
 }
 
+@font-face {
+    font-family: "Caslon";
+    src: url(/dihedral/fonts/caslon-pro-regular.ttf) format('truetype');
+}
+
 * {
     padding: 0;
     margin: 0;
@@ -16,11 +21,20 @@ html {
 
 body {
     min-height: 100%;
-    font-family: "Big Caslon Medium", serif;
+    font-family: "Caslon", "Georgia", serif;
+    font-size: 18px;
+}
+
+h1, h2, h3, h4 {
+    font-family: "Caslon", "Georgia", serif;
 }
 
 a {
     color: black;
+}
+
+.project-name {
+    font-family: "Big Caslon Medium", "Georgia", serif;
 }
 
 .main-content {
@@ -46,6 +60,7 @@ a {
 
 .main-content p {
     margin: 20px 0;
+    line-height: 1.5;
 }
 
 .main-content pre {
