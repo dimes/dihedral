@@ -3,16 +3,13 @@ package resolver
 
 import (
 	"fmt"
-	"go/ast"
-	"go/build"
-	"go/importer"
-	"go/parser"
 	"go/token"
 	"go/types"
 
 	"github.com/dimes/dihedral/structs"
 	"github.com/dimes/dihedral/typeutil"
 	"github.com/pkg/errors"
+	"golang.org/x/tools/go/packages"
 )
 
 const (
@@ -161,38 +158,17 @@ func ResolveComponentModules(
 				Type: structNode,
 			}
 
-			buildPackage, err := build.Default.Import(namedNode.Obj().Pkg().Path(), ".", build.FindOnly)
-			if err != nil {
-				return nil, errors.Wrapf(err, "Error importing %+v", namedNode)
+			config := &packages.Config{
+				Mode: packages.LoadSyntax,
 			}
 
-			packageDir := buildPackage.Dir
-			packages, err := parser.ParseDir(fileSet, packageDir, nil, 0)
+			pkgs, err := packages.Load(config, namedNode.Obj().Pkg().Path())
 			if err != nil {
-				return nil, errors.Wrapf(err, "Error parsing package %s", packageDir)
+				return nil, errors.Wrapf(err, "Error loading %+v", namedNode)
 			}
 
-			for _, astPkg := range packages {
-				var files []*ast.File
-				for _, file := range astPkg.Files {
-					files = append(files, file)
-				}
-
-				info := &types.Info{
-					Defs: make(map[*ast.Ident]types.Object),
-				}
-
-				conf := types.Config{
-					Importer: importer.ForCompiler(fileSet, "source", nil),
-				}
-
-				_, err := conf.Check(namedNode.Obj().Pkg().Path(), fileSet, files, info)
-				if err != nil {
-					return nil, errors.Wrapf(err, "Error getting definitions for package %s",
-						namedNode.Obj().Pkg().Path())
-				}
-
-				for identifier, definition := range info.Defs {
+			for _, astPkg := range pkgs {
+				for identifier, definition := range astPkg.TypesInfo.Defs {
 					if !identifier.IsExported() {
 						continue
 					}
