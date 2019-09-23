@@ -41,7 +41,7 @@ func NewGeneratedProvider(
 	signature := resolvedType.Method.Type().(*types.Signature)
 	for i := 0; i < signature.Params().Len(); i++ {
 		param := signature.Params().At(i)
-		assignment, err := AssignmentForFieldType(generatedComponentType, param.Type(), providers, bindings)
+		assignment, err := AssignmentForFieldType(generatedComponentReceiver, param.Type(), providers, bindings)
 		if err != nil {
 			return nil, errors.Wrapf(err, "Error generating binding for %+v", resolvedType)
 		}
