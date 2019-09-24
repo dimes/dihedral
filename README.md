@@ -60,4 +60,4 @@ Use the bindings
 Wire, Google's injection framework, is another compile time framework for Go. Both frameworks are inspired
 by Dagger. **Dihedral** differs from Wire in that **Dihedral** focuses on auto-injected components and self-contained modules, whereas Wire focuses more on type registration via provider functions. **Dihedral** also leverages struct receivers for better organization of runtime provided types. These features make **Dihedral** nicer to work with. 
 
-**Dihedral**'s component structure also enables one to have multiple injected components that share modules. The type annotation system allows for auto-injected components, provided modules, and, in the future, sub-components and have a different scope than the parent component.
+**Dihedral**'s component structure also enables one to have multiple injected components that share modules. The type annotation system allows for auto-injected components, provided modules, and, in the future, sub-components that have a different scope than the parent component.
