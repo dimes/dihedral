@@ -49,7 +49,7 @@ func NewGeneratedComponent(
 	componentName string,
 	targets []*resolver.InjectionTarget,
 	providers map[string]resolver.ResolvedType,
-	bindings map[string]*structs.Struct,
+	bindings map[string]*types.Named,
 ) (*GeneratedComponent, error) {
 	seenTargets := make(map[string]struct{})
 
@@ -71,12 +71,22 @@ func NewGeneratedComponent(
 		switch typedTarget := target.Type.(type) {
 		case *types.Named:
 			targetID := typeutil.IDFromNamed(typedTarget)
-			if provider := providers[targetID]; provider != nil {
+			if providers[targetID] != nil {
 				targetName = typedTarget
 				// No target struct for providers
 			} else if boundType := bindings[targetID]; boundType != nil {
-				targetName = boundType.Name
-				targetStruct = boundType.Type
+				targetName = boundType
+
+				// Bound targets can either be generic names or structs. We only care
+				// if the type is a struct when we don't have a provider for the bound type
+				boundTargetID := typeutil.IDFromNamed(boundType)
+				if providers[boundTargetID] == nil {
+					boundType, ok := boundType.Underlying().(*types.Struct)
+					if !ok {
+						return nil, fmt.Errorf("%+v is not a struct and is not provided", boundType)
+					}
+					targetStruct = boundType
+				}
 			} else {
 				return nil, fmt.Errorf("No type binding found for %+v", target)
 			}
@@ -184,11 +194,17 @@ func (g *GeneratedComponent) ToSource(componentPackage string) map[string]string
 	for _, targetAssignment := range g.targetsAndAssignments {
 		target := targetAssignment.target
 		packagePath := target.Name.Obj().Pkg().Path()
-		if _, ok := imports[packagePath]; ok {
-			continue
+		if _, ok := imports[packagePath]; !ok {
+			imports[packagePath] = "di_import_" + strconv.Itoa(len(imports)+1)
 		}
 
-		imports[packagePath] = "di_import_" + strconv.Itoa(len(imports)+1)
+		castTo := targetAssignment.assignment.CastTo()
+		if castTo != nil {
+			castToPackagePath := castTo.Obj().Pkg().Path()
+			if _, ok := imports[castToPackagePath]; !ok {
+				imports[castToPackagePath] = "di_import_" + strconv.Itoa(len(imports)+1)
+			}
+		}
 	}
 
 	var builder strings.Builder
@@ -199,7 +215,6 @@ func (g *GeneratedComponent) ToSource(componentPackage string) map[string]string
 	for packagePath, importName := range imports {
 		builder.WriteString("\t" + importName + " \"" + packagePath + "\"\n")
 	}
-
 	builder.WriteString(")\n")
 
 	builder.WriteString("type " + g.generatedTypeName + " struct {\n")

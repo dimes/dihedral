@@ -90,6 +90,10 @@ func main() {
 
 	fmt.Printf("Generated component: %+v\n", component)
 
+	if err := os.RemoveAll(outputDir); err != nil {
+		panic(err)
+	}
+
 	generatedSource := component.ToSource(filepath.Base(outputDir))
 	os.MkdirAll(outputDir, os.ModePerm)
 	for name, file := range generatedSource {
