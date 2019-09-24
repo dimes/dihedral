@@ -22,4 +22,6 @@ func TestExampleInjection(t *testing.T) {
 	serviceTimeout, err := component.GetServiceTimeout()
 	assert.NoError(t, err)
 	assert.Equal(t, example.ServiceTimeout(5000000000), serviceTimeout)
+
+	assert.Equal(t, "specific", string(component.GetBoundType()))
 }
