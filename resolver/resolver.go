@@ -61,10 +61,10 @@ func (m *ModuleResolvedType) DebugInfo() string {
 
 // ResolveResult is the result of ResolveComponentModules
 type ResolveResult struct {
-	TargetInterfaceName string                     // Name of the Target interface
-	Targets             []*InjectionTarget         // List of injection targets
-	Providers           map[string]ResolvedType    // Map of type to the provider of that type
-	Bindings            map[string]*structs.Struct // Map of interface to concrete type
+	TargetInterfaceName string                  // Name of the Target interface
+	Targets             []*InjectionTarget      // List of injection targets
+	Providers           map[string]ResolvedType // Map of type to the provider of that type
+	Bindings            map[string]*types.Named // Map of interface to concrete type
 }
 
 // ResolveComponentModules resolves the modules for the component interface.
@@ -90,7 +90,7 @@ func ResolveComponentModules(
 
 	seen := make(map[string]struct{})
 	providers := make(map[string]ResolvedType)
-	bindings := make(map[string]*structs.Struct)
+	bindings := make(map[string]*types.Named)
 	for len(stack) > 0 {
 		node := stack[len(stack)-1]
 		stack = stack[:len(stack)-1]
@@ -392,8 +392,8 @@ func getNodesFromInterface(
 
 func extractBindings(
 	node *structs.Interface,
-) (map[string]*structs.Struct, error) {
-	bindings := make(map[string]*structs.Struct)
+) (map[string]*types.Named, error) {
+	bindings := make(map[string]*types.Named)
 	for i := 0; i < node.Type.NumMethods(); i++ {
 		method := node.Type.Method(i)
 		if !method.Exported() {
@@ -420,25 +420,22 @@ func extractBindings(
 			return nil, fmt.Errorf("Found duplicate binding for %+v in %+v", interfaceName, node)
 		}
 
-		implementationPointer, ok := signature.Params().At(0).Type().(*types.Pointer)
-		if !ok {
-			return nil, fmt.Errorf("%+v is not a pointer in %+v", signature.Params().At(0).Type(), node)
+		var implementationName *types.Named
+		implementationType := signature.Params().At(0).Type()
+		switch actualType := implementationType.(type) {
+		case *types.Pointer:
+			name, ok := actualType.Elem().(*types.Named)
+			if !ok {
+				return nil, fmt.Errorf("Expecting %+v to be a struct in %+v", implementationName, node)
+			}
+			implementationName = name
+		case *types.Named:
+			implementationName = actualType
+		default:
+			return nil, fmt.Errorf("%+v is not a pointer or a named type", implementationType)
 		}
 
-		implementationName, ok := implementationPointer.Elem().(*types.Named)
-		if !ok {
-			return nil, fmt.Errorf("Expecting %+v to be a struct in %+v", implementationName, node)
-		}
-
-		implementationType, ok := implementationName.Underlying().(*types.Struct)
-		if !ok {
-			return nil, fmt.Errorf("%+v is not a struct in %+v", implementationName, node)
-		}
-
-		bindings[interfaceID] = &structs.Struct{
-			Name: implementationName,
-			Type: implementationType,
-		}
+		bindings[interfaceID] = implementationName
 	}
 
 	return bindings, nil

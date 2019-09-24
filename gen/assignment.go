@@ -5,7 +5,6 @@ import (
 	"go/types"
 
 	"github.com/dimes/dihedral/resolver"
-	"github.com/dimes/dihedral/structs"
 	"github.com/dimes/dihedral/typeutil"
 )
 
@@ -22,7 +21,11 @@ func ProviderName(typeName *types.Named) string {
 // Assignment represents a way of getting a injected value, either by a provider
 // or by an injectable factory method
 type Assignment interface {
-	// GetSourceAssignment returns the assignment as a string of source code
+	// CastTo returns the type this assignment should be cast to. If nil is returned, then
+	// the assignment is not cast to any type.
+	CastTo() *types.Named
+
+	// GetSourceAssignment returns the assignment as a string of source code.
 	GetSourceAssignment() string
 }
 
@@ -42,6 +45,10 @@ func NewFactoryAssignment(
 	}
 }
 
+func (f *factoryAssignment) CastTo() *types.Named {
+	return nil
+}
+
 func (f *factoryAssignment) GetSourceAssignment() string {
 	return FactoryName(f.typeName) + "(" + f.componentReceiverName + ")"
 }
@@ -49,17 +56,24 @@ func (f *factoryAssignment) GetSourceAssignment() string {
 type providerAssignment struct {
 	componentReceiverName string
 	typeName              *types.Named
+	castTo                *types.Named
 }
 
 // NewProviderAssignment returns a component provided assignment
 func NewProviderAssignment(
 	componentReceiverName string,
 	typeName *types.Named,
+	castTo *types.Named,
 ) Assignment {
 	return &providerAssignment{
 		componentReceiverName: componentReceiverName,
 		typeName:              typeName,
+		castTo:                castTo,
 	}
+}
+
+func (p *providerAssignment) CastTo() *types.Named {
+	return p.castTo
 }
 
 func (p *providerAssignment) GetSourceAssignment() string {
@@ -71,7 +85,7 @@ func AssignmentForFieldType(
 	componentReceiverName string,
 	rawFieldType types.Type,
 	providers map[string]resolver.ResolvedType,
-	bindings map[string]*structs.Struct,
+	bindings map[string]*types.Named,
 ) (Assignment, error) {
 	var fieldName *types.Named
 	switch fieldType := rawFieldType.(type) {
@@ -83,17 +97,23 @@ func AssignmentForFieldType(
 		return nil, fmt.Errorf("Field %+v is not a supported type", fieldType)
 	}
 
+	var castTo *types.Named
 	fieldID := typeutil.IDFromNamed(fieldName)
 	if binding := bindings[fieldID]; binding != nil {
-		fieldID = typeutil.IDFromNamed(binding.Name)
-		fieldName = binding.Name
+		if fieldName != binding {
+			castTo = fieldName
+		}
+
+		fieldID = typeutil.IDFromNamed(binding)
+		fieldName = binding
 	}
 
 	if provider := providers[fieldID]; provider != nil {
 		typedProvider, ok := provider.(*resolver.ModuleResolvedType)
 		if ok {
+			fmt.Printf("%+v \t %+v \t %+v\n", rawFieldType, fieldName, castTo)
 			fieldName = typedProvider.Name
-			return NewProviderAssignment(componentReceiverName, fieldName), nil
+			return NewProviderAssignment(componentReceiverName, fieldName, castTo), nil
 		}
 
 		return nil, fmt.Errorf("Unknown provider type %+v", provider)
