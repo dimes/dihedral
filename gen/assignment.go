@@ -111,7 +111,6 @@ func AssignmentForFieldType(
 	if provider := providers[fieldID]; provider != nil {
 		typedProvider, ok := provider.(*resolver.ModuleResolvedType)
 		if ok {
-			fmt.Printf("%+v \t %+v \t %+v\n", rawFieldType, fieldName, castTo)
 			fieldName = typedProvider.Name
 			return NewProviderAssignment(componentReceiverName, fieldName, castTo), nil
 		}
