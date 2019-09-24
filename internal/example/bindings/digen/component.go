@@ -20,6 +20,13 @@ func NewDihedralServiceComponent(
 		github_com_dimes_dihedral_internal_example_dbstore_DBProviderModule: github_com_dimes_dihedral_internal_example_dbstore_DBProviderModule,
 	}
 }
+func (d *DihedralServiceComponent) GetBoundType() di_import_1.BoundType {
+	obj, err := d.provides_github_com_dimes_dihedral_internal_example_bindings_SpecificBoundType()
+	if err != nil {
+		panic(err)
+	}
+	return (di_import_1.BoundType)(obj)
+}
 func (d *DihedralServiceComponent) GetService() (*di_import_3.Service, error) {
 	obj, err := factory_github_com_dimes_dihedral_internal_example_Service(d)
 	if err != nil {

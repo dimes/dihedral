@@ -24,10 +24,21 @@ import (
 // 5. InjectionDefinition: Contains a Target component and a list of modules to include for doing the
 //    injection
 
+// BoundType is used to test whether or not bound types work on components
+type BoundType string
+
+// SpecificBoundType is a specific instance assignable to BoundType
+type SpecificBoundType string
+
+// BindingModule binds SpecificBoundType to BoundType
+type BindingModule interface {
+	BindsBoundType(impl SpecificBoundType) BoundType
+}
+
 // ServiceDefinition defines the target and the modules to include
 type ServiceDefinition interface {
 	// The list of modules to include
-	Modules() (*ServiceModule, dbstore.DBBindingModule)
+	Modules() (BindingModule, *ServiceModule, dbstore.DBBindingModule)
 
 	// An implementation of the interface will be automatically generated. The values
 	// returned will be automatically instiated from their dependencies.
@@ -44,6 +55,8 @@ type ServiceComponent interface {
 
 	// Non-interface / pointer types cannot return an error
 	GetServiceTimeout() (example.ServiceTimeout, error)
+
+	GetBoundType() BoundType
 }
 
 // ServiceModule illustrates how each method on a struct module can provide
@@ -53,4 +66,9 @@ type ServiceModule struct{}
 // ProvidesServiceTimeout provides a time.Duration under the name ServiceTimeout
 func (s *ServiceModule) ProvidesServiceTimeout() (example.ServiceTimeout, error) {
 	return example.ServiceTimeout(5 * time.Second), nil
+}
+
+// ProvidesSpecificBoundType provides the SpecificBoundType
+func (s *ServiceModule) ProvidesSpecificBoundType() SpecificBoundType {
+	return SpecificBoundType("specific")
 }

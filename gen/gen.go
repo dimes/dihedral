@@ -286,7 +286,17 @@ func (g *GeneratedComponent) ToSource(componentPackage string) map[string]string
 		}
 		builder.WriteString("\t}\n")
 
-		builder.WriteString("\treturn obj")
+		castTo := assignment.CastTo()
+		returnObj := "obj"
+		if castTo != nil {
+			importName := imports[castTo.Obj().Pkg().Path()]
+			if importName != "" {
+				importName = importName + "."
+			}
+			returnObj = "(" + importName + castTo.Obj().Name() + ")(" + returnObj + ")"
+		}
+
+		builder.WriteString("\treturn " + returnObj)
 		if target.HasError {
 			builder.WriteString(", nil")
 		}
